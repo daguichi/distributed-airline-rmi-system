@@ -1,0 +1,13 @@
+ar/edu/itba/pod/model/Flight.class
+ar/edu/itba/pod/model/Ticket.class
+ar/edu/itba/pod/exceptions/NoSuchAirplaneException.class
+ar/edu/itba/pod/service/FlightNotificationService.class
+ar/edu/itba/pod/model/Airplane.class
+ar/edu/itba/pod/service/FlightAdministrationService.class
+ar/edu/itba/pod/model/FlightStatus.class
+ar/edu/itba/pod/model/Section.class
+ar/edu/itba/pod/exceptions/FlightAlreadyExists.class
+ar/edu/itba/pod/model/Category.class
+ar/edu/itba/pod/service/SeatAdministrationService.class
+ar/edu/itba/pod/service/SeatMapService.class
+ar/edu/itba/pod/exceptions/NoSuchFlightException.class

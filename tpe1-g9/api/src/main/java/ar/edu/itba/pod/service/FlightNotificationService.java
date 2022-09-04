@@ -5,6 +5,6 @@ import java.rmi.RemoteException;
 
 public interface FlightNotificationService extends Remote {
 
-    void registerPassenger(int flightCode, String passengerName) throws RemoteException;
+    void registerPassenger(String flightCode, String passengerName) throws RemoteException;
 
 }

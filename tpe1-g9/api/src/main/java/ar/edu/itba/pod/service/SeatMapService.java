@@ -6,7 +6,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface SeatMapService extends Remote {
-    void getFlightMap(int flightCode) throws RemoteException;
-    void getFlightMapByCategory(int flightCode, Category category) throws RemoteException;
-    void getFlightMapByRow(int flightCode, int row) throws RemoteException;
+    void getFlightMap(String flightCode) throws RemoteException;
+    void getFlightMapByCategory(String flightCode, Category category) throws RemoteException;
+    void getFlightMapByRow(String flightCode, int row) throws RemoteException;
 }
