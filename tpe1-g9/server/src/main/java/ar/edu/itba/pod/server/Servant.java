@@ -14,7 +14,7 @@ import java.util.*;
 
 public class Servant implements FlightAdministrationService, FlightNotificationService, SeatAdministrationService, SeatMapService {
 
-    HashMap<String, Ticket> tickets = new HashMap<>() {{
+    HashMap<String, Ticket> tickets = new HashMap<String, Ticket>() {{
         put("1A", new Ticket("Fico", Category.BUSINESS, 1, 'A'));
         put("14B", new Ticket("Dagos", Category.PREMIUM_ECONOMY, 14, 'B'));
         put("23F", new Ticket("DAX", Category.ECONOMY, 23, 'F'));
