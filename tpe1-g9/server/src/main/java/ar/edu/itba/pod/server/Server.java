@@ -7,6 +7,6 @@ public class Server {
     private static Logger logger = LoggerFactory.getLogger(Server.class);
 
     public static void main(String[] args) {
-        logger.info("tpe1-g9-parent Server Starting ...");
+        logger.info("tpe1-g9 Server Starting ...");
     }
 }

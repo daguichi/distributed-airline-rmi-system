@@ -4,17 +4,17 @@
    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
-      <artifactId>tpe1-g9-parent-parent</artifactId>
+      <artifactId>tpe1-g9-parent</artifactId>
       <groupId>ar.edu.itba.pod</groupId>
       <version>1.0-SNAPSHOT</version>
    </parent>
-   <artifactId>tpe1-g9-parent-client</artifactId>
+   <artifactId>tpe1-g9-server</artifactId>
    <version>1.0-SNAPSHOT</version>
-   <name>tpe1-g9-parent-client</name>
+   <name>tpe1-g9-server</name>
    <dependencies>
       <dependency>
          <groupId>ar.edu.itba.pod</groupId>
-         <artifactId>tpe1-g9-parent-api</artifactId>
+         <artifactId>tpe1-g9-api</artifactId>
          <version>1.0-SNAPSHOT</version>
       </dependency>
    </dependencies>
