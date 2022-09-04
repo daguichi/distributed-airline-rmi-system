@@ -14,22 +14,26 @@ import java.util.*;
 
 public class Servant implements FlightAdministrationService, FlightNotificationService, SeatAdministrationService, SeatMapService {
 
-    HashMap<String, Ticket> tickets = new HashMap<>() {{
+    Map<String, Ticket> tickets = new HashMap<>() {{
         put("1A", new Ticket("Fico", Category.BUSINESS, 1, 'A'));
         put("14B", new Ticket("Dagos", Category.PREMIUM_ECONOMY, 14, 'B'));
         put("23F", new Ticket("DAX", Category.ECONOMY, 23, 'F'));
     }};
 
     Airplane airplane = new Airplane("Airbus A320", Arrays.asList(
-            new Section(Category.ECONOMY, 10, 10),
-            new Section(Category.PREMIUM_ECONOMY, 10, 10),
-            new Section(Category.BUSINESS, 10, 10)
+            new Section(Category.ECONOMY, 3, 3),
+            new Section(Category.PREMIUM_ECONOMY, 6, 6),
+            new Section(Category.BUSINESS, 9, 9)
     ));
 
     Flight f = new Flight(airplane, "AR123", "EZE", tickets, FlightStatus.PENDING);
 
-    private Map<String, Flight> flights = new HashMap<>();
-    private Map<String, Airplane> airplanes = new HashMap<>();
+    private Map<String, Flight> flights = new HashMap<>() {{
+        put("AR123", f);
+    }};
+    private Map<String, Airplane> airplanes = new HashMap<>() {{
+        put("Airbus A320", airplane);
+    }};
 
     @Override
     public void addPlaneModel(String name, List<Section> sections) throws RemoteException {
@@ -122,8 +126,9 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             throw new NoSuchFlightException(flightCode);
         }
         flight.getAirplane().getSections().forEach(section -> {
-            System.out.println("|");
+
             for (int i = 0; i < section.getRowCount(); i++) {
+                System.out.print("|");
                 String seat = null;
                 for (int j = 0; j < section.getColumnCount(); j++) {
                     seat = String.valueOf(i) + String.valueOf((char) (j + 65));
