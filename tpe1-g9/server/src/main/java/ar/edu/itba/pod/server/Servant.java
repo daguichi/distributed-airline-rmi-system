@@ -1,8 +1,6 @@
 package ar.edu.itba.pod.server;
 
-import ar.edu.itba.pod.exceptions.FlightAlreadyExists;
-import ar.edu.itba.pod.exceptions.NoSuchAirplaneException;
-import ar.edu.itba.pod.exceptions.NoSuchFlightException;
+import ar.edu.itba.pod.exceptions.*;
 import ar.edu.itba.pod.model.*;
 import ar.edu.itba.pod.service.FlightAdministrationService;
 import ar.edu.itba.pod.service.FlightNotificationService;
@@ -12,80 +10,69 @@ import ar.edu.itba.pod.service.SeatMapService;
 import java.rmi.RemoteException;
 import java.util.*;
 
+//TODO todos los locks
+
 public class Servant implements FlightAdministrationService, FlightNotificationService, SeatAdministrationService, SeatMapService {
 
-    HashMap<String, Ticket> tickets = new HashMap<String, Ticket>() {{
-        put("1A", new Ticket("Fico", Category.BUSINESS, 1, 'A'));
-        put("14B", new Ticket("Dagos", Category.PREMIUM_ECONOMY, 14, 'B'));
-        put("23F", new Ticket("DAX", Category.ECONOMY, 23, 'F'));
-    }};
-
-    Airplane airplane = new Airplane("Airbus A320", Arrays.asList(
-            new Section(Category.ECONOMY, 3, 3),
-            new Section(Category.PREMIUM_ECONOMY, 6, 6),
-            new Section(Category.BUSINESS, 9, 9)
-    ));
-
-    Flight f = new Flight(airplane, "AR123", "EZE", tickets, FlightStatus.PENDING);
-
-    private Map<String, Flight> flights = new HashMap<>() {{
-        put("AR123", f);
-    }};
-    private Map<String, Airplane> airplanes = new HashMap<>() {{
-        put("Airbus A320", airplane);
-    }};
+    private final Map<String, Airplane> airplanes = new HashMap<>();
+    private final Map<String, Flight> flights = new HashMap<>();
 
     @Override
     public void addPlaneModel(String name, List<Section> sections) throws RemoteException {
+        if(name.isEmpty() || sections.isEmpty())
+            throw new InvalidAirplaneException();
+        if(airplanes.containsKey(name))
+            throw new AirplaneAlreadyExistsException(name);
+        for(Section s : sections) {
+            if(s.getColumnCount() <= 0 || s.getRowCount() <= 0)
+                throw new InvalidSectionException();
+        }
         Airplane airplane = new Airplane(name, sections);
         airplanes.put(name, airplane);
     }
 
     @Override
     public void addFlight(String modelName, String flightCode, String destinationCode, Map<String, Ticket> tickets) throws RemoteException {
+        if (flights.containsKey(flightCode))
+            throw new FlightAlreadyExistsException(flightCode);
+
         Airplane airplane = airplanes.get(modelName);
-        if (airplane == null) {
+        if (airplane == null)
             throw new NoSuchAirplaneException(modelName);
-        }
+
         Flight flight = new Flight(airplane, flightCode, destinationCode, tickets, FlightStatus.PENDING);
-        if (flights.containsKey(flightCode)) {
-            throw new FlightAlreadyExists(flightCode);
-        }
         flights.put(flightCode, flight);
     }
 
     @Override
     public FlightStatus getFlightStatus(String flightCode) throws RemoteException {
-        Flight flight = flights.get(flightCode);
-        if (flight == null) {
-            throw new NoSuchFlightException(flightCode);
-        }
+        Flight flight = getFLight(flightCode);
         return flight.getStatus();
     }
 
     @Override
     public void cancelFlight(String flightCode) throws RemoteException {
-        Flight flight = flights.get(flightCode);
-        if (flight == null) {
-            throw new NoSuchFlightException(flightCode);
-        }
+        Flight flight = getFLight(flightCode);
         flight.setStatus(FlightStatus.CANCELLED);
     }
 
     @Override
     public void confirmFlight(String flightCode) throws RemoteException {
-        Flight flight = flights.get(flightCode);
-        if (flight == null) {
-            throw new NoSuchFlightException(flightCode);
-        }
+        Flight flight = getFLight(flightCode);
         flight.setStatus(FlightStatus.CONFIRMED);
     }
 
     @Override
     public void reprogramFlightTickets(Flight flight) throws RemoteException {
-//        flight.getTickets().forEach(ticket -> ticket.setFlight(
-//
-//        ));
+
+    }
+
+    //TODO HAY QUE CEHQUEAR QUE EL ASIENTO QUE ME PASAN ES CORRECTO?
+    //TODO CHEQUEAR QUE LA COLUMN ESTE EN MAYUS?
+    @Override
+    public boolean isAvailable(String flightCode, int row, char column) throws RemoteException {
+        Flight flight = getFLight(flightCode);
+        return !flight.getTickets().containsKey(String.valueOf(row) + column);
     }
 
 
@@ -94,10 +81,6 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     }
 
-    @Override
-    public void isAvailable(String flightCode, String passengerName, int row, char column) throws RemoteException {
-
-    }
 
     @Override
     public void assignSeat(String flightCode, String passengerName, int row, char column) throws RemoteException {
@@ -121,17 +104,15 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     @Override
     public void getFlightMap(String flightCode) throws RemoteException {
-        Flight flight = flights.get(flightCode);
-        if (flight == null) {
-            throw new NoSuchFlightException(flightCode);
-        }
+        Flight flight = getFLight(flightCode);
+
         flight.getAirplane().getSections().forEach(section -> {
 
             for (int i = 0; i < section.getRowCount(); i++) {
                 System.out.print("|");
-                String seat = null;
+                String seat;
                 for (int j = 0; j < section.getColumnCount(); j++) {
-                    seat = String.valueOf(i) + String.valueOf((char) (j + 65));
+                    seat = i + String.valueOf((char) (j + 65));
                     char passenger = flight.getTickets().containsKey(seat) ? flight.getTickets().get(seat).getPassengerName().charAt(0) : '*';
                     System.out.printf(" %2d %c %c |", i, (char) (j + 65), passenger);
                 }
@@ -151,8 +132,11 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     }
 
-    public static void main(String[] args) throws RemoteException {
-        Servant servant = new Servant();
-        servant.getFlightMap("AR123");
+    private Flight getFLight(String flightCode) {
+        Flight flight = flights.get(flightCode);
+        if (flight == null)
+            throw new NoSuchFlightException(flightCode);
+        return flight;
     }
+
 }
