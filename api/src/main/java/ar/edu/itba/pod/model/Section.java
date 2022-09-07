@@ -1,10 +1,14 @@
 package ar.edu.itba.pod.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Section implements Comparable<Section> {
 
     private Category category;
     private int rowCount;
     private int columnCount;
+    private Map<Integer, Map<Integer, Ticket>> seatMap;
 
     public Section(Category category, int columnCount, int rowCount) {
         this.category = category;
@@ -43,5 +47,9 @@ public class Section implements Comparable<Section> {
 
     public int getTotalSeats() {
         return rowCount * columnCount;
+    }
+
+    public Map<Integer, Map<Integer, Ticket>> getSeatMap() {
+        return seatMap;
     }
 }
