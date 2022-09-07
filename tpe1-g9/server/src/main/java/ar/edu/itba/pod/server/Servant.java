@@ -103,7 +103,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     @Override
-    public void getFlightMap(String flightCode) throws RemoteException {
+    public List<Row> getFlightMap(String flightCode) throws RemoteException {
         Flight flight = getFLight(flightCode);
 
         flight.getAirplane().getSections().forEach(section -> {
@@ -120,16 +120,17 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                 System.out.println();
             }
         });
+        return new ArrayList<>();
     }
 
     @Override
-    public void getFlightMapByCategory(String flightCode, Category category) throws RemoteException {
-
+    public List<Row> getFlightMapByCategory(String flightCode, Category category) throws RemoteException {
+        return new ArrayList<>();
     }
 
     @Override
-    public void getFlightMapByRow(String flightCode, int row) throws RemoteException {
-
+    public List<Row> getFlightMapByRow(String flightCode, int row) throws RemoteException {
+        return new ArrayList<>();
     }
 
     private Flight getFLight(String flightCode) {

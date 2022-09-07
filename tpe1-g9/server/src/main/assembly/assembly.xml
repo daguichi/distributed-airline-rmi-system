@@ -9,7 +9,7 @@
 	<fileSets>
 		<fileSet>
 			<directory>${project.basedir}</directory>
-			<outputDirectory></outputDirectory>
+			<outputDirectory>/</outputDirectory>
 			<includes>
 				<include>README*</include>
 				<include>LICENSE*</include>
@@ -18,7 +18,7 @@
 		</fileSet>
 		<fileSet>
 			<directory>src/main/assembly/overlay</directory>
-			<outputDirectory></outputDirectory>
+			<outputDirectory>/</outputDirectory>
 			<filtered>true</filtered>
 		</fileSet>
 		<fileSet>

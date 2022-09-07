@@ -1,5 +1,4 @@
 #!/bin/bash
-//cliente de consulta de mapas de asientos
 
-//TODO: NOMBRE DEL CLIENT
-java -cp 'lib/jars/*'  'ar.edu.itba.pod.client.client' $@
+#usage ./run-seatMap -DserverAddress=xx.xx.xx.xx:yyyy -Dflight=flightCode [-Dcategory=catName | -Drow=rowNumber ] -DoutPath=output.csv
+java "$@" -cp 'lib/jars/*' 'ar.edu.itba.pod.client.SeatMapClient'
