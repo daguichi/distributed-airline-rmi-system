@@ -40,4 +40,8 @@ public class Section implements Comparable<Section> {
     public void setColumnCount(int columnCount) {
         this.columnCount = columnCount;
     }
+
+    public int getTotalSeats() {
+        return rowCount * columnCount;
+    }
 }

@@ -18,5 +18,5 @@ public interface FlightAdministrationService extends Remote {
     FlightStatus getFlightStatus(String flightCode) throws RemoteException;
     void cancelFlight(String flightCode) throws RemoteException;
     void confirmFlight(String flightCode) throws RemoteException;
-    void reprogramFlightTickets(Flight flight) throws RemoteException;
+    void reprogramFlightsTickets(List<Flight> flights) throws RemoteException;
 }

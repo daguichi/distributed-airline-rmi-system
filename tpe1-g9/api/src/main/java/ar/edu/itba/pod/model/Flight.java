@@ -59,6 +59,10 @@ public class Flight {
         this.tickets = tickets;
     }
 
+    public int availableSeats() {
+        return airplane.getTotalSeats() - tickets.size();
+    }
+
     @Override
     public String toString() {
         return "Flight{" +
