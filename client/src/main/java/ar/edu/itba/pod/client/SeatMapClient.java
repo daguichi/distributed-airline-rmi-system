@@ -19,6 +19,7 @@ import java.util.Optional;
 public class SeatMapClient {
     private static final Logger logger = LoggerFactory.getLogger(SeatMapClient.class);
 
+    //FIXME: TICKET MODEL REFACTOR
     private static void writeOutputToCSV(String fileName, List<Row> flightRows) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
         for(Row row : flightRows) {
@@ -32,7 +33,7 @@ public class SeatMapClient {
     }
 
     public static void main(String[] args) {
-        logger.info("Seat Map Client starting ...");
+        logger.info("Seat Map Client starting...");
 
         //Non nullable params
         String flightCode = Optional.ofNullable(System.getProperty("flight")).orElseThrow(IllegalArgumentException::new);
