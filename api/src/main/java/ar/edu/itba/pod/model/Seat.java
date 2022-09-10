@@ -22,6 +22,10 @@ public class Seat {
         return Optional.ofNullable(ticket);
     }
 
+    public void setTicket(Ticket ticket) {
+        this.ticket = ticket;
+    }
+
     public boolean isAvailable() {
         return !getTicket().isPresent();
     }

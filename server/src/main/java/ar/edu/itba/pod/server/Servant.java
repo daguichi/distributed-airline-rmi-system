@@ -72,15 +72,16 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
 
-    //TODO que pasa si un flight que te pasan no esta cancelado
     @Override
-    public void reprogramFlightsTickets(List<Flight> reprogramFlights) throws RemoteException {
+    public void reprogramFlightsTickets() throws RemoteException {
+        List<Flight> reprogramFlights = flights.values().stream()
+                .filter(flight -> flight.getStatus().equals(FlightStatus.CANCELLED))
+                .sorted(Comparator.comparing(Flight::getFlightCode)).collect(Collectors.toList());
 
         List<Flight> possibleFlights = flights.values().stream()
                 .filter(flight -> flight.getStatus().equals(FlightStatus.PENDING))
                 .collect(Collectors.toList());
 
-        reprogramFlights.sort(Comparator.comparing(Flight::getFlightCode));
         for (Flight f : reprogramFlights)
             processFlight(f, possibleFlights);
     }
@@ -97,27 +98,33 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             processTicket(t, destinationFlights, oldFlight);
     }
 
+    //TODO ver si se puede mejorar
     private void processTicket(Ticket ticket, List<Flight> possibleFlights, Flight oldFlight) {
+        Flight newFlight = null;
+        int category = ticket.getCategory().ordinal();
+        while(newFlight == null && category >= 0) {
+            newFlight = possibleFlights.stream().filter(
+                    flight -> flight.getAirplane().getSeats().values().stream().anyMatch(
+                            row -> row.values().stream().anyMatch(
+                                    seat -> seat.isAvailable() && seat.getCategory().compareTo(ticket.getCategory()) == 0)
+                    )
+            ).min(Comparator.comparing(Flight::availableSeats).thenComparing(flight -> flight.getAirplane().getName()))
+                    .orElse(null);
+            category--;
+        }
 
-        // TODO: En caso de existir más de un vuelo alternativo se prefieren los asientos de mejor categoría.
-        Flight newFlight = possibleFlights.stream().filter(
-                flight -> flight.getAirplane().getSeats().values().stream().anyMatch(
-                        row -> row.values().stream().anyMatch(
-                                seat -> seat.isAvailable() && seat.getCategory().compareTo(ticket.getCategory()) >= 0)
-                )
-        ).min(Comparator.comparing(Flight::availableSeats).thenComparing(flight -> flight.getAirplane().getName())).orElse(oldFlight);
+        if(newFlight == null)
+            return ;
 
-
-
-        // TODO: cambiar el ticket.
-
+        oldFlight.getTickets().remove(ticket);
+        newFlight.getTickets().add(ticket);
     }
 
     //TODO HAY QUE CEHQUEAR QUE EL ASIENTO QUE ME PASAN ES CORRECTO?
     //TODO CHEQUEAR QUE LA COLUMN ESTE EN MAYUS?
     @Override
     public boolean isAvailable(String flightCode, int row, char column) throws RemoteException {
-        return true;
+        return flights.get(flightCode).getAirplane().getSeats().get(row).get((int) column).isAvailable();
     }
 
 
@@ -130,6 +137,15 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     @Override
     public void assignSeat(String flightCode, String passengerName, int row, char column) throws RemoteException {
 
+        Flight flight = flights.get(flightCode);
+        Seat seat = flight.getAirplane().getSeats().get(row).get((int) column);
+       // Ticket ticket = flight.getTickets().get(passengerName); TODO como verga agarramos el ticket
+        //TODO UN PASAJERO NO PUEDE TENER DOS ASIENTOS
+//        if(!flight.getStatus().equals(FlightStatus.PENDING) ||
+//                !isAvailable(flightCode, row, column) ||
+//                seat.getCategory() <= ticket.getCategory())
+//            return ;
+//        seat.setTicket(ticket);
     }
 
     @Override
@@ -144,7 +160,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     @Override
     public void changeFlight(String oldFlightCode, String newFlightCode, String passengerName) throws RemoteException {
-
+        
     }
 
 
