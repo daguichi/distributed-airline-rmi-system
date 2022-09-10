@@ -4,9 +4,8 @@ public class Ticket {
     private String passengerName;
     private Category category;
 
-    public Ticket(String passengerName, Category category) {
+    public Ticket(String passengerName) {
         this.passengerName = passengerName;
-        this.category = category;
     }
 
     public String getPassengerName() {

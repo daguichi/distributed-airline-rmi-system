@@ -1,14 +1,17 @@
 package ar.edu.itba.pod.model;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Airplane  {
 
-    private String name;
+    private final String name;
     private List<Section> sections;
     private int totalSeats;
+    private int occupiedSeats;
+    private HashMap<Integer, HashMap<Integer,Seat>> seats;
 
     public Airplane(String name, List<Section> sections) {
         this.name = name;
@@ -26,5 +29,17 @@ public class Airplane  {
 
     public int getTotalSeats() {
         return totalSeats;
+    }
+
+    public HashMap<Integer, HashMap<Integer, Seat>> getSeats() {
+        return seats;
+    }
+
+    public int getOccupiedSeats() {
+        return occupiedSeats;
+    }
+
+    public void setOccupiedSeats(int occupiedSeats) {
+        this.occupiedSeats = occupiedSeats;
     }
 }

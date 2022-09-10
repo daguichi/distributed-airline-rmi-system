@@ -94,17 +94,22 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                 .collect(Collectors.toList());
 
         for(Ticket t : tickets)
-            processTicket(t, destinationFlights);
+            processTicket(t, destinationFlights, oldFlight);
     }
 
-    private void processTicket(Ticket ticket, List<Flight> possibleFlights) {
-        Flight newFlight;
-        List<Flight> filteredFlights = possibleFlights.stream().filter(flight -> flight.getAirplane().getSections().stream()
-                        .anyMatch(section -> section.getCategory().compareTo(ticket.getCategory()) >= 0))
-                .collect(Collectors.toList());
+    private void processTicket(Ticket ticket, List<Flight> possibleFlights, Flight oldFlight) {
+
+        // TODO: En caso de existir más de un vuelo alternativo se prefieren los asientos de mejor categoría.
+        Flight newFlight = possibleFlights.stream().filter(
+                flight -> flight.getAirplane().getSeats().values().stream().anyMatch(
+                        row -> row.values().stream().anyMatch(
+                                seat -> seat.isAvailable() && seat.getCategory().compareTo(ticket.getCategory()) >= 0)
+                )
+        ).min(Comparator.comparing(Flight::availableSeats).thenComparing(flight -> flight.getAirplane().getName())).orElse(oldFlight);
 
 
 
+        // TODO: cambiar el ticket.
 
     }
 
