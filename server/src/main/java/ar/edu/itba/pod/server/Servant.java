@@ -154,10 +154,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     public List<AlternativeFlight> getAlternativeFlights(String flightCode, String passengerName) throws RemoteException {
         Flight baseFlight = getFlight(flightCode);
         Ticket baseTicket = getTicket(baseFlight,passengerName);
-        List<Flight> alternativeFlights = flights.values().stream().filter(
-                flight -> flight.getDestinationCode().equals(baseFlight.getDestinationCode())).filter(
-            flight -> flight.getStatus().equals(FlightStatus.PENDING)).filter(flight -> !flight.getFlightCode().equals(flightCode)
-        ).filter( flight -> flight.getTickets().stream().noneMatch(t -> t.getPassengerName().equals(passengerName))).collect(Collectors.toList());
+
+        List<Flight> alternativeFlights = getAlternativeFlightsList(baseFlight.getDestinationCode(), passengerName);
 
         List<AlternativeFlight> toReturn = new ArrayList<>();
         for(int i = 0; i <= baseTicket.getCategory().ordinal(); i++) {
@@ -180,14 +178,13 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     public void changeFlight(String oldFlightCode, String newFlightCode, String passengerName) throws RemoteException {
         Flight oldFlight = getFlight(oldFlightCode);
         Ticket oldTicket = getTicket(oldFlight,passengerName);
-        List<Flight> alternativeFlights = flights.values().stream().filter(
-                flight -> flight.getDestinationCode().equals(oldFlightCode)).filter(
-                flight -> flight.getStatus().equals(FlightStatus.PENDING)).filter(flight -> !flight.getFlightCode().equals(oldFlightCode)
-        ).filter( flight -> flight.getTickets().stream().noneMatch(t -> t.getPassengerName().equals(passengerName))).collect(Collectors.toList());
+
+        List<Flight> alternativeFlights = getAlternativeFlightsList(oldFlightCode, passengerName);
 
         Optional<Flight> newFlight = alternativeFlights.stream().filter(flight -> flight.getFlightCode().equals(newFlightCode)).findFirst();
         if(!newFlight.isPresent())
             throw new InvalidAlternativeFlightException(newFlightCode);
+
         newFlight.get().getTickets().add(oldTicket);
         oldFlight.getTickets().remove(oldTicket);
     }
@@ -288,6 +285,13 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         if(!flight.getAirplane().getSeats().containsKey(row))
             throw new InvalidRowException(row, flight.getFlightCode());
         return new ArrayList<>(flight.getAirplane().getSeats().get(row).values());
+    }
+
+    private List<Flight> getAlternativeFlightsList(String oldFlightCode, String passengerName) {
+        return flights.values().stream().filter(
+                flight -> flight.getDestinationCode().equals(oldFlightCode)).filter(
+                flight -> flight.getStatus().equals(FlightStatus.PENDING)).filter(flight -> !flight.getFlightCode().equals(oldFlightCode)
+        ).filter( flight -> flight.getTickets().stream().noneMatch(t -> t.getPassengerName().equals(passengerName))).collect(Collectors.toList());
     }
 
 }
