@@ -46,7 +46,7 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
 
     @Override
     public void changedTicket(String flightCode, String destinationCode,String newFlightCode) throws RemoteException {
-        logger.info("Ticket from flight"+ flightCode + "with destination "+ destinationCode + "was changed to "+newFlightCode);
+       logger.info("Flight"+ flightCode + "with destination "+ destinationCode + "have changed the ticket to flight "+newFlightCode);
 
     }
 }
