@@ -120,42 +120,46 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         newFlight.getTickets().add(ticket);
     }
 
-    //TODO HAY QUE CEHQUEAR QUE EL ASIENTO QUE ME PASAN ES CORRECTO?
-    //TODO CHEQUEAR QUE LA COLUMN ESTE EN MAYUS?
     @Override
     public boolean isAvailable(String flightCode, int row, char column) throws RemoteException {
-        return flights.get(flightCode).getAirplane().getSeats().get(row).get((int) column).isAvailable();
+        Flight flight = getFLight(flightCode);
+        return getSeat(flight, row, column).isAvailable();
     }
-
-
-    @Override
-    public void registerPassenger(String flightCode, String passengerName) throws RemoteException {
-
-    }
-
 
     @Override
     public void assignSeat(String flightCode, String passengerName, int row, char column) throws RemoteException {
-
         Flight flight = flights.get(flightCode);
-        Seat seat = flight.getAirplane().getSeats().get(row).get((int) column);
-       // Ticket ticket = flight.getTickets().get(passengerName); TODO como verga agarramos el ticket
-        //TODO UN PASAJERO NO PUEDE TENER DOS ASIENTOS
-//        if(!flight.getStatus().equals(FlightStatus.PENDING) ||
-//                !isAvailable(flightCode, row, column) ||
-//                seat.getCategory() <= ticket.getCategory())
-//            return ;
-//        seat.setTicket(ticket);
+        Seat seat = getSeat(flight, row, column);
+        Ticket ticket = getTicket(flight, passengerName);
+
+        if(getOldSeat(flight, passengerName).isPresent())
+            throw new PassengerAlreadyInFlightException(passengerName, flightCode);
+
+        checkSeat(flight, seat, ticket);
+        seat.setTicket(ticket);
     }
 
     @Override
     public void changeSeat(String flightCode, String passengerName, int row, char column) throws RemoteException {
+        Flight flight = flights.get(flightCode);
+        Seat newSeat = getSeat(flight, row, column);
+        Ticket ticket = getTicket(flight, passengerName);
 
+        Optional<Seat> oldSeat = getOldSeat(flight, passengerName);
+        if(!oldSeat.isPresent())
+            throw new PassengerNotInFlightException(passengerName, flightCode);
+
+        checkSeat(flight, newSeat, ticket);
+
+        oldSeat.get().setTicket(null);
+        newSeat.setTicket(ticket);
     }
 
     @Override
-    public void getAlternativeFlights(String flightCode, String passengerName) throws RemoteException {
-
+    public List<Flight> getAlternativeFlights(String flightCode, String passengerName) throws RemoteException {
+        Flight flight = flights.get(flightCode);
+        Ticket ticket = getTicket(flight, passengerName);
+        return new ArrayList<>();
     }
 
     @Override
@@ -163,25 +167,30 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         
     }
 
+    @Override
+    public void registerPassenger(String flightCode, String passengerName) throws RemoteException {
+
+    }
+
 
     //TODO REVISAR ESTO, FUNCION PARA PASAR COLUMNA INTEGR A CHAR Y NO HACER (CHAR) J+ 65?
     @Override
     public List<Row> getFlightMap(String flightCode) throws RemoteException {
-        Flight flight = getFLight(flightCode);
-
-        flight.getAirplane().getSections().forEach(section -> {
-
-            for (int i = 0; i < section.getRowCount(); i++) {
-                System.out.print("|");
-                for (int j = 0; j < section.getColumnCount(); j++) {
-                    char passenger = section.getSeatMap().get(i).get(j) == null
-                            ? section.getSeatMap().get(i).get(j).getPassengerName().charAt(0) : '*';
-                    System.out.printf(" %2d %c %c |", i, (char) (j + 65), passenger);
-                }
-                System.out.printf("  %s", section.getCategory().name());
-                System.out.println();
-            }
-        });
+//        Flight flight = getFLight(flightCode);
+//
+//        flight.getAirplane().getSections().forEach(section -> {
+//
+//            for (int i = 0; i < section.getRowCount(); i++) {
+//                System.out.print("|");
+//                for (int j = 0; j < section.getColumnCount(); j++) {
+//                    char passenger = section.getSeatMap().get(i).get(j) == null
+//                            ? section.getSeatMap().get(i).get(j).getPassengerName().charAt(0) : '*';
+//                    System.out.printf(" %2d %c %c |", i, (char) (j + 'A'), passenger);
+//                }
+//                System.out.printf("  %s", section.getCategory().name());
+//                System.out.println();
+//            }
+//        });
         return new ArrayList<>();
     }
 
@@ -200,6 +209,38 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         if (flight == null)
             throw new NoSuchFlightException(flightCode);
         return flight;
+    }
+
+    private Seat getSeat(Flight flight, int row, char column) {
+        Map<Integer, Seat> specifiedRow = flight.getAirplane().getSeats().get(row);
+        if(specifiedRow == null)
+            throw new InvalidSeatException(row, column);
+        Seat seat = specifiedRow.get((int) column - 'A');
+        if(seat == null)
+            throw new InvalidSeatException(row, column);
+        return seat;
+    }
+
+    private Ticket getTicket(Flight flight, String passengerName) {
+        Optional<Ticket> ticket = flight.getTickets().stream().filter(t -> t.getPassengerName().equals(passengerName)).findFirst();
+        if(!ticket.isPresent())
+            throw new NoTicketException(passengerName, flight.getFlightCode());
+        return ticket.get();
+    }
+
+    private void checkSeat(Flight flight, Seat seat, Ticket ticket) {
+        if(!flight.getStatus().equals(FlightStatus.PENDING) ||
+                !seat.isAvailable() ||
+                seat.getCategory().ordinal() > ticket.getCategory().ordinal())
+            throw new UnassignableSeatException();
+    }
+
+    //If a seat is not available, it has a ticket assigned to it, ticket will be present
+    private Optional<Seat> getOldSeat(Flight flight, String passengerName) {
+        return flight.getAirplane().getSeats().values().stream()
+                .flatMap(r -> r.values().stream())
+                .filter(s -> !s.isAvailable()
+                        && s.getTicket().get().getPassengerName().equals(passengerName)).findFirst();
     }
 
 }
