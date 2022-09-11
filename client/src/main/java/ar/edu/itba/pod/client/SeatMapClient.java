@@ -1,7 +1,6 @@
 package ar.edu.itba.pod.client;
 
 import ar.edu.itba.pod.model.Category;
-import ar.edu.itba.pod.model.Row;
 import ar.edu.itba.pod.model.Ticket;
 import ar.edu.itba.pod.service.SeatMapService;
 import org.slf4j.Logger;

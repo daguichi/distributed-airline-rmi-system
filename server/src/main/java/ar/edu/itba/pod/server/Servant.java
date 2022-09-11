@@ -172,36 +172,52 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     }
 
-
-    //TODO REVISAR ESTO, FUNCION PARA PASAR COLUMNA INTEGR A CHAR Y NO HACER (CHAR) J+ 65?
     @Override
     public List<Row> getFlightMap(String flightCode) throws RemoteException {
-//        Flight flight = getFLight(flightCode);
-//
-//        flight.getAirplane().getSections().forEach(section -> {
-//
-//            for (int i = 0; i < section.getRowCount(); i++) {
-//                System.out.print("|");
-//                for (int j = 0; j < section.getColumnCount(); j++) {
-//                    char passenger = section.getSeatMap().get(i).get(j) == null
-//                            ? section.getSeatMap().get(i).get(j).getPassengerName().charAt(0) : '*';
-//                    System.out.printf(" %2d %c %c |", i, (char) (j + 'A'), passenger);
-//                }
-//                System.out.printf("  %s", section.getCategory().name());
-//                System.out.println();
-//            }
-//        });
-        return new ArrayList<>();
+        Flight flight = getFLight(flightCode);
+        List<Row> rows = new ArrayList<>();
+
+        for(Integer key : flight.getAirplane().getSeats().keySet()) {
+            List<Seat> seats = getSeatRow(flight, key);
+            rows.add(new Row(seats, key, seats.get(0).getCategory()));
+        }
+
+        if(rows.isEmpty())
+            throw new EmptyMapException();
+
+        return rows;
     }
 
     @Override
     public List<Row> getFlightMapByCategory(String flightCode, Category category) throws RemoteException {
-        return new ArrayList<>();
+        Flight flight = getFLight(flightCode);
+        List<Row> rows = new ArrayList<>();
+
+        //TODO REVISAR ESTILO
+        for(Integer key : flight.getAirplane().getSeats().keySet()) {
+            List<Seat> seats = getSeatRow(flight, key);
+            Category rowCategory = seats.get(0).getCategory();
+            if(rowCategory.equals(category))
+                rows.add(new Row(seats, key, rowCategory));
+            else if(rowCategory.ordinal() < category.ordinal())
+                break ;
+        }
+
+        if(rows.isEmpty())
+            throw new EmptyMapException();
+
+        return rows;
     }
 
     @Override
-    public List<Row> getFlightMapByRow(String flightCode, int row) throws RemoteException {
-        return new ArrayList<>();
+    public Row getFlightMapByRow(String flightCode, int row) throws RemoteException {
+        Flight flight = getFLight(flightCode);
+        List<Seat> seats = getSeatRow(flight, row);
+
+        if(seats.isEmpty())
+            throw new EmptyMapException();
+
+        return new Row(seats, row, seats.get(0).getCategory());
     }
 
     private Flight getFLight(String flightCode) {
@@ -241,6 +257,12 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                 .flatMap(r -> r.values().stream())
                 .filter(s -> !s.isAvailable()
                         && s.getTicket().get().getPassengerName().equals(passengerName)).findFirst();
+    }
+
+    private List<Seat> getSeatRow(Flight flight, int row) {
+        if(!flight.getAirplane().getSeats().containsKey(row))
+            throw new InvalidRowException(row, flight.getFlightCode());
+        return new ArrayList<>(flight.getAirplane().getSeats().get(row).values());
     }
 
 }

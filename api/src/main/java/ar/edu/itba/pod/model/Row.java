@@ -3,26 +3,26 @@ package ar.edu.itba.pod.model;
 import java.util.List;
 
 public class Row {
-    private final int rowNumber;
-    private final List<Ticket> tickets;
 
-    private final Category category;
+    private List<Seat> seatList;
+    private int row;
+    private Category category;
 
-    public Category getCategory() {
-        return category;
-    }
-
-    public Row(int rowNumber, List<Ticket> tickets, Category category) {
-        this.rowNumber = rowNumber;
-        this.tickets = tickets;
+    public Row(List<Seat> seatList, int row, Category category) {
+        this.seatList = seatList;
+        this.row = row;
         this.category = category;
     }
 
-    public int getRowNumber() {
-        return rowNumber;
+    public List<Seat> getSeatList() {
+        return seatList;
     }
 
-    public List<Ticket> getTickets() {
-        return tickets;
+    public int getRow() {
+        return row;
+    }
+
+    public Category getCategory() {
+        return category;
     }
 }
