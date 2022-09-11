@@ -7,7 +7,6 @@ import java.util.Map;
 public class Airplane  {
 
     private final String name;
-    private int occupiedSeats;
     private Map<Integer, Map<Integer,Seat>> seats;
 
     public Airplane(String name, List<Section> sections) {
@@ -33,11 +32,4 @@ public class Airplane  {
         return seats;
     }
 
-    public int getOccupiedSeats() {
-        return occupiedSeats;
-    }
-
-    public void setOccupiedSeats(int occupiedSeats) {
-        this.occupiedSeats = occupiedSeats;
-    }
 }

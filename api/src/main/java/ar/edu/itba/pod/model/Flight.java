@@ -44,7 +44,7 @@ public class Flight {
         return tickets;
     }
 
-    public int availableSeats() {
-        return airplane.getTotalSeats() - tickets.size();
+    public long availableSeats() {
+        return airplane.getSeats().values().stream().flatMap(row -> row.values().stream()).filter(Seat::isAvailable).count();
     }
 }
