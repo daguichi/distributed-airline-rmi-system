@@ -1,7 +1,8 @@
 package ar.edu.itba.pod.client;
 
 import ar.edu.itba.pod.model.Category;
-import ar.edu.itba.pod.model.Ticket;
+import ar.edu.itba.pod.model.Row;
+import ar.edu.itba.pod.model.Seat;
 import ar.edu.itba.pod.service.SeatMapService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,15 +20,17 @@ import java.util.Optional;
 public class SeatMapClient {
     private static final Logger logger = LoggerFactory.getLogger(SeatMapClient.class);
 
-    //FIXME: TICKET MODEL REFACTOR
     private static void writeOutputToCSV(String fileName, List<Row> flightRows) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+        int col;
         for(Row row : flightRows) {
-            for(Ticket ticket : row.getTickets()){
-                writer.append(String.format("%s %s %s ,", ticket.getRow(), ticket.getColumn(),
-                        ticket.getPassengerName().toCharArray()[0]));
+            col = 0;
+            for(Seat seat : row.getSeatList()){
+                writer.append(String.format("| %s %s %s ", row.getRow() < 10 ? "0" + row.getRow() : row.getRow() ,
+                        col + 'A',
+                        seat.getTicket().get().getPassengerName().toCharArray()[0]));
             }
-            writer.append(String.format("%s\n", row.getCategory()));
+            writer.append(String.format("|   %s\n", row.getCategory().toString()));
         }
         writer.close();
     }
@@ -70,7 +74,8 @@ public class SeatMapClient {
                 rowList = seatMapService.getFlightMapByCategory(flightCode, Category.valueOf(category));
             }
             else if(row != null) {
-                rowList = seatMapService.getFlightMapByRow(flightCode, Integer.parseInt(row));
+                rowList = new ArrayList<>();
+                rowList.add(seatMapService.getFlightMapByRow(flightCode, Integer.parseInt(row)));
             }
             else
                 rowList = seatMapService.getFlightMap(flightCode);
