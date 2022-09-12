@@ -44,4 +44,14 @@ public class Seat {
     public Category getCategory() {
         return category;
     }
+
+    @Override
+    public String toString() {
+        return "Seat{" +
+                "ticket=" + ticket +
+                ", category=" + category +
+                ", row=" + row +
+                ", column=" + column +
+                '}';
+    }
 }

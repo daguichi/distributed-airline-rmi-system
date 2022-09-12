@@ -1,15 +1,12 @@
 package ar.edu.itba.pod.client;
 
-import ar.edu.itba.pod.model.Airplane;
 import ar.edu.itba.pod.model.AirplaneWrapper;
 import ar.edu.itba.pod.model.Category;
 import ar.edu.itba.pod.model.Section;
 import ar.edu.itba.pod.service.FlightAdministrationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;

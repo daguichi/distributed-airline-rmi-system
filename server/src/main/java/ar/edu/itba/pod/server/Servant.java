@@ -47,6 +47,11 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             Airplane airplane = new Airplane(name, sections);
             airplanes.put(name, airplane);
         }
+
+        // para debugging
+        for(Airplane airplane : airplanes.values()) {
+            System.out.println(airplane);
+        }
     }
 
     @Override
