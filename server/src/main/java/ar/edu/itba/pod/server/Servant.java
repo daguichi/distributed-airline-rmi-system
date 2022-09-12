@@ -213,7 +213,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             throw new FlightAlreadyConfirmedException();
         List<NotificationEventCallback> callbacks = subscribers.computeIfAbsent(flightCode, k -> new ArrayList<>());
         callbacks.add(callback);
-
+        notifySuccessfulRegistration(flightCode);
     }
 
     @Override
@@ -393,6 +393,22 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                 executor.submit(() -> {
                     try {
                         callback.changedTicket(flightCode, f.getDestinationCode(), newFlightCode);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+        }
+    }
+
+    private void notifySuccessfulRegistration(String flightCode) {
+        Flight f = getFlight(flightCode);
+        List<NotificationEventCallback> toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        if(toNotify != null) {
+            for(NotificationEventCallback callback : toNotify) {
+                executor.submit(() -> {
+                    try {
+                        callback.successfullRegistration(flightCode, f.getDestinationCode());
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }

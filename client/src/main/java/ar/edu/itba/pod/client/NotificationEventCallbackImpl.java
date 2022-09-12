@@ -5,15 +5,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.rmi.RemoteException;
-import java.util.Optional;
 
 public class NotificationEventCallbackImpl implements NotificationEventCallback {
 
-    private static Logger logger = LoggerFactory.getLogger(NotificationEventCallback.class);
+    private static final Logger logger = LoggerFactory.getLogger(NotificationEventCallback.class);
 
     @Override
-    public void successfullRegistration(String flightCode, String destinationCode, String category, int row, char column ) throws RemoteException {
-        logger.info("Flight"+ flightCode + "with destination "+ destinationCode + "was successfully registered with"+ category +'|'+row+'|'+column);
+    public void successfullRegistration(String flightCode, String destinationCode ) throws RemoteException {
+        logger.info("You are following Flight "+ flightCode +" with destination " + destinationCode);
     }
 
     @Override

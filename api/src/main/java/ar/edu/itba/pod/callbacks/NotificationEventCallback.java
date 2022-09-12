@@ -5,7 +5,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface NotificationEventCallback extends Remote, Serializable {
-    void successfullRegistration(String flightCode, String destinationCode, String category, int row, char column ) throws RemoteException;
+    void successfullRegistration(String flightCode, String destinationCode ) throws RemoteException;
 
     void confirmedFlight(String flightCode, String destinationCode) throws RemoteException;
 
