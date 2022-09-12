@@ -159,11 +159,10 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             throw new PassengerNotInFlightException(passengerName, flightCode);
 
         checkSeat(flight, newSeat, ticket);
-
+        notifySeatChanged(flightCode, oldSeat.get().getRow(), oldSeat.get().getColumn(), row, column,
+                newSeat.getCategory().toString(), oldSeat.get().getCategory().toString());
         oldSeat.get().setTicket(null);
         newSeat.setTicket(ticket);
-        //FIXME: GET OLD COL/ROW
-        notifySeatChanged(flightCode, oldSeat.get().getRow(), oldSeat.get().getColumn(), row, column);
     }
 
     @Override

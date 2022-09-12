@@ -17,7 +17,7 @@ public class Airplane  {
             for(int i = rows; i < s.getRowCount() + rows; i++) {
                 seats.put(i, new HashMap<>());
                 for(int j = 0; j < s.getColumnCount(); j++)
-                    seats.get(i).put(j, new Seat(s.getCategory()));
+                    seats.get(i).put(j, new Seat(s.getCategory(), null, i, (char) (j + 'A')));
             }
             rows += s.getRowCount();
         }
