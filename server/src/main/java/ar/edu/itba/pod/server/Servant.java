@@ -209,7 +209,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     @Override
     public void registerPassenger(String flightCode, String passengerName, NotificationEventCallback callback) throws RemoteException {
         if(getFlight(flightCode).getStatus().equals(FlightStatus.CONFIRMED))
-            throw new FlightAlreadyConfirmedException();
+            throw new FlightAlreadyConfirmedException(flightCode);
         List<NotificationEventCallback> callbacks = subscribers.computeIfAbsent(flightCode, k -> new ArrayList<>());
         callbacks.add(callback);
         notifySuccessfulRegistration(flightCode);
