@@ -162,7 +162,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
         oldSeat.get().setTicket(null);
         newSeat.setTicket(ticket);
-        //TODO: GET OLD COL/ROW
+        //FIXME: GET OLD COL/ROW
         notifySeatChanged(flightCode, oldSeat.get().getRow(), oldSeat.get().getColumn(), row, column);
     }
 
@@ -206,9 +206,13 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         notifyTicketChanged(oldFlightCode, newFlightCode);
     }
 
+    //TODO: THREAD SAFE
     @Override
-    public void registerPassenger(String flightCode, String passengerName) throws RemoteException {
+    public void registerPassenger(String flightCode, String passengerName, NotificationEventCallback callback) throws RemoteException {
+        if(getFlight(flightCode).getStatus().equals(FlightStatus.CONFIRMED))
+            throw new FlightAlreadyConfirmedException();
         List<NotificationEventCallback> callbacks = subscribers.computeIfAbsent(flightCode, k -> new ArrayList<>());
+        callbacks.add(callback);
 
     }
 
