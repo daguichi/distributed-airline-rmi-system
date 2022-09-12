@@ -1,13 +1,15 @@
 package ar.edu.itba.pod.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Ticket {
+public class Ticket implements Serializable {
     private String passengerName;
     private Category category;
 
-    public Ticket(String passengerName) {
+    public Ticket(String passengerName, Category category) {
         this.passengerName = passengerName;
+        this.category = category;
     }
 
     public String getPassengerName() {

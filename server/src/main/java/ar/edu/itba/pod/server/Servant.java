@@ -7,6 +7,8 @@ import ar.edu.itba.pod.service.FlightAdministrationService;
 import ar.edu.itba.pod.service.FlightNotificationService;
 import ar.edu.itba.pod.service.SeatAdministrationService;
 import ar.edu.itba.pod.service.SeatMapService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -25,6 +27,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final Map<String, List<NotificationEventCallback>> subscribers;
+
+    private final static Logger logger = LoggerFactory.getLogger(Servant.class);
 
     public Servant() {
         this.subscribers = new HashMap<>();
@@ -66,6 +70,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
             Flight flight = new Flight(airplane, flightCode, destinationCode, tickets, FlightStatus.PENDING);
             flights.put(flightCode, flight);
+
+            logger.info("Flight {} added", flightCode);
         }
     }
 

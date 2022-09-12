@@ -22,3 +22,10 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+tpe1-g9-server-1.0-SNAPSHOT/
+
+tpe1-g9-client-1.0-SNAPSHOT/
+
+target/
+
