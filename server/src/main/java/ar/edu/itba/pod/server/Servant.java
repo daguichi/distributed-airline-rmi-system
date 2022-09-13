@@ -7,6 +7,8 @@ import ar.edu.itba.pod.service.FlightAdministrationService;
 import ar.edu.itba.pod.service.FlightNotificationService;
 import ar.edu.itba.pod.service.SeatAdministrationService;
 import ar.edu.itba.pod.service.SeatMapService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -25,6 +27,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final Map<String, List<NotificationEventCallback>> subscribers;
+
+    private final static Logger logger = LoggerFactory.getLogger(Servant.class);
 
     public Servant() {
         this.subscribers = new HashMap<>();
@@ -47,6 +51,11 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             Airplane airplane = new Airplane(name, sections);
             airplanes.put(name, airplane);
         }
+
+        // para debugging
+        for(Airplane airplane : airplanes.values()) {
+            System.out.println(airplane);
+        }
     }
 
     @Override
@@ -61,6 +70,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
             Flight flight = new Flight(airplane, flightCode, destinationCode, tickets, FlightStatus.PENDING);
             flights.put(flightCode, flight);
+
+            logger.info("Flight {} added", flightCode);
         }
     }
 
@@ -209,7 +220,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     @Override
     public void registerPassenger(String flightCode, String passengerName, NotificationEventCallback callback) throws RemoteException {
         if(getFlight(flightCode).getStatus().equals(FlightStatus.CONFIRMED))
-            throw new FlightAlreadyConfirmedException();
+            throw new FlightAlreadyConfirmedException(flightCode);
         List<NotificationEventCallback> callbacks = subscribers.computeIfAbsent(flightCode, k -> new ArrayList<>());
         callbacks.add(callback);
         notifySuccessfulRegistration(flightCode);
@@ -407,7 +418,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             for(NotificationEventCallback callback : toNotify) {
                 executor.submit(() -> {
                     try {
-                        callback.successfullRegistration(flightCode, f.getDestinationCode());
+                        callback.successfulRegistration(flightCode, f.getDestinationCode());
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }

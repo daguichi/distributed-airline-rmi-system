@@ -1,15 +1,10 @@
 package ar.edu.itba.pod.client;
 
-import ar.edu.itba.pod.model.Airplane;
-import ar.edu.itba.pod.model.AirplaneWrapper;
-import ar.edu.itba.pod.model.Category;
-import ar.edu.itba.pod.model.Section;
+import ar.edu.itba.pod.model.*;
 import ar.edu.itba.pod.service.FlightAdministrationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -65,9 +60,12 @@ public class AdminClient {
                         service.addPlaneModel(airplane.getModelName(), airplane.getSections());
                         logger.info("Added airplane model: " + airplane.getModelName());
                     }
-                    logger.info("Successfully added all models");
                     break;
                 case "flights":
+                    for (FlightWrapper flight : parseFlights(inPath)) {
+                        service.addFlight(flight.getModelName(), flight.getFlightCode(), flight.getDestinationCode(), flight.getTickets());
+                        logger.info("Added flight: " + flight.getFlightCode());
+                    }
                     break;
             }
         } else if ("status".equals(action) || "confirm".equals(action) || "cancel".equals(action)) {
@@ -118,7 +116,37 @@ public class AdminClient {
         return ret;
     }
 
-//    private static List<FlightWrapper> parseFlights(String inPath) {
-//
-//    }
+    private static List<FlightWrapper> parseFlights(String inPath) {
+        List<FlightWrapper> ret = new ArrayList<>();
+        Path path = Paths.get(inPath);
+        int added = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(path.toFile()))) {
+            String line;
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] flightData = line.split(";");
+                String modelName = flightData[0];
+                String flightCode = flightData[1];
+                String destinationCode = flightData[2];
+                String[] ticketsStr = flightData[3].split(",");
+                List<Ticket> tickets = new ArrayList<>();
+                for (String ticketStr : ticketsStr) {
+                    String[] ticketData = ticketStr.split("#");
+                    Category category = Category.valueOf(ticketData[0]);
+                    String passengerName = ticketData[1];
+                    Ticket ticket = new Ticket(passengerName, category);
+                    tickets.add(ticket);
+                }
+                FlightWrapper flight = new FlightWrapper(modelName, flightCode, destinationCode, tickets);
+                ret.add(flight);
+                added++;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        logger.info("Added {} flights", added);
+        return ret;
+    }
 }

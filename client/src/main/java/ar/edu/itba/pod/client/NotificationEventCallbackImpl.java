@@ -11,7 +11,7 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
     private static final Logger logger = LoggerFactory.getLogger(NotificationEventCallback.class);
 
     @Override
-    public void successfullRegistration(String flightCode, String destinationCode ) throws RemoteException {
+    public void successfulRegistration(String flightCode, String destinationCode ) throws RemoteException {
         logger.info("You are following Flight "+ flightCode +" with destination " + destinationCode);
     }
 
