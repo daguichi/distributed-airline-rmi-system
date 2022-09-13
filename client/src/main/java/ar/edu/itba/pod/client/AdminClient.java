@@ -69,9 +69,25 @@ public class AdminClient {
                     break;
             }
         } else if ("status".equals(action) || "confirm".equals(action) || "cancel".equals(action)) {
-
+            String flightCode = parseParameter(args, "-Dflight");
+            FlightStatus ret;
+            switch (action) {
+                case "status":
+                    ret = service.getFlightStatus(flightCode);
+                    logger.info("Flight status: " + ret);
+                    break;
+                case "confirm":
+                    ret = service.confirmFlight(flightCode);
+                    logger.info("Flight status: " + ret);
+                    break;
+                case "cancel":
+                    ret = service.cancelFlight(flightCode);
+                    logger.info("Flight status: " + ret);
+                    break;
+            }
         } else if ("reticketing".equals(action)) {
-
+            ReticketWrapper reticket = service.reprogramFlightsTickets();
+            logger.info(reticket.toString());
         }
     }
 

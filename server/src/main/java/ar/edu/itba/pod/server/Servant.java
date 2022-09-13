@@ -54,15 +54,11 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                 throw new AirplaneAlreadyExistsException(name);
             Airplane airplane = new Airplane(name, sections);
             airplanes.put(name, airplane);
+            logger.info("Added airplane model: " + name);
         }
         finally {
             writeLock.unlock();
         }
-
-//        // para debugging
-//        for(Airplane airplane : airplanes.values()) {
-//            System.out.println(airplane);
-//        }
     }
 
     @Override
@@ -98,11 +94,14 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     @Override
-    public void cancelFlight(String flightCode) throws RemoteException {
+    public FlightStatus cancelFlight(String flightCode) throws RemoteException {
         readLock.lock();
         Flight flight;
         try {
             flight = getFlight(flightCode);
+            if (flight.getStatus() != FlightStatus.PENDING) {
+                throw new NotPendingFlight(flightCode);
+            }
         }
         finally {
             readLock.unlock();
@@ -115,15 +114,18 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             writeLock.unlock();
         }
         notifyFlightCancelled(flightCode);
+        return FlightStatus.CANCELLED;
     }
 
     @Override
-    public void confirmFlight(String flightCode) throws RemoteException {
+    public FlightStatus confirmFlight(String flightCode) throws RemoteException {
         readLock.lock();
         Flight flight;
         try {
             flight = getFlight(flightCode);
-
+            if (flight.getStatus() != FlightStatus.PENDING) {
+                throw new NotPendingFlight(flightCode);
+            }
         }
         finally {
             readLock.unlock();
@@ -136,10 +138,12 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             writeLock.unlock();
         }
         notifyFlightConfirmed(flightCode);
+        return FlightStatus.CONFIRMED;
+
     }
 
     @Override
-    public void reprogramFlightsTickets() throws RemoteException {
+    public ReticketWrapper reprogramFlightsTickets() throws RemoteException {
         readLock.lock();
         List<Flight> reprogramFlights;
         try {
@@ -152,14 +156,18 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             readLock.unlock();
         }
 
+        ReticketWrapper rw = new ReticketWrapper();
         for (Flight f : reprogramFlights) {
             writeLock.lock();
-            try { processFlight(f); }
-            finally { writeLock.unlock(); }
+            try { processFlight(f, rw); }
+            finally {
+                writeLock.unlock();
+             }
         }
+        return rw;
     }
 
-    private void processFlight(Flight oldFlight) {
+    private void processFlight(Flight oldFlight, ReticketWrapper rw) {
         List<Flight> possibleFlights;
         possibleFlights = flights.values().stream().filter(
                 flight -> flight.getDestinationCode().equals(oldFlight.getDestinationCode())).filter(
@@ -168,12 +176,13 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
         List<Ticket> tickets = new LinkedList<>(oldFlight.getTickets());
         tickets.sort(Comparator.comparing(Ticket::getPassengerName));
+
         for(Ticket t : tickets)
-            processTicket(t, possibleFlights, oldFlight);
+            processTicket(t, possibleFlights, oldFlight, rw);
     }
 
     //TODO ver si se puede mejorar
-    private void processTicket(Ticket ticket, List<Flight> possibleFlights, Flight oldFlight) {
+    private void processTicket(Ticket ticket, List<Flight> possibleFlights, Flight oldFlight, ReticketWrapper rw) {
         Flight newFlight = null;
         int category = ticket.getCategory().ordinal();
         while(newFlight == null && category >= 0) {
@@ -187,11 +196,14 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             category--;
         }
 
-        if(newFlight == null)
+        if(newFlight == null) {
+            rw.addNoAlternativeTicket(new ReticketWrapper.TicketInfo(ticket.getPassengerName(), oldFlight.getFlightCode()));
             return ;
+        }
 
         oldFlight.getTickets().remove(ticket);
         newFlight.getTickets().add(ticket);
+        rw.incrementTickets();
     }
 
     @Override
