@@ -14,6 +14,8 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 public class Servant implements FlightAdministrationService, FlightNotificationService, SeatAdministrationService, SeatMapService {
@@ -21,14 +23,16 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     private final Map<String, Airplane> airplanes = new HashMap<>();
     private final Map<String, Flight> flights = new HashMap<>();
 
-    private final Object planesLock = new Object();
-    private final Object flightsLock = new Object();
-
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final Map<String, List<NotificationEventCallback>> subscribers;
 
     private final static Logger logger = LoggerFactory.getLogger(Servant.class);
+
+    private final ReentrantReadWriteLock reentrantLock = new ReentrantReadWriteLock(true);
+    private final Lock readLock = reentrantLock.readLock();
+    private final Lock writeLock = reentrantLock.writeLock();
+
 
     public Servant() {
         this.subscribers = new HashMap<>();
@@ -44,69 +48,120 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                 throw new InvalidSectionException();
         }
 
-        synchronized (planesLock) {
+        writeLock.lock();
+        try {
             if(airplanes.containsKey(name))
                 throw new AirplaneAlreadyExistsException(name);
-
             Airplane airplane = new Airplane(name, sections);
             airplanes.put(name, airplane);
         }
-
-        // para debugging
-        for(Airplane airplane : airplanes.values()) {
-            System.out.println(airplane);
+        finally {
+            writeLock.unlock();
         }
+
+//        // para debugging
+//        for(Airplane airplane : airplanes.values()) {
+//            System.out.println(airplane);
+//        }
     }
 
     @Override
     public void addFlight(String modelName, String flightCode, String destinationCode, List<Ticket> tickets) throws RemoteException {
         Airplane airplane = airplanes.get(modelName);
+
         if (airplane == null)
             throw new NoSuchAirplaneException(modelName);
-
-        synchronized (flightsLock) {
-            if (flights.containsKey(flightCode))
+        writeLock.lock();
+        try {
+            if(flights.containsKey(flightCode))
                 throw new FlightAlreadyExistsException(flightCode);
-
             Flight flight = new Flight(airplane, flightCode, destinationCode, tickets, FlightStatus.PENDING);
             flights.put(flightCode, flight);
-
+        }
+        finally {
             logger.info("Flight {} added", flightCode);
+            writeLock.unlock();
         }
     }
 
     @Override
     public FlightStatus getFlightStatus(String flightCode) throws RemoteException {
-        Flight flight = getFlight(flightCode);
+        readLock.lock();
+        Flight flight;
+        try {
+            flight = getFlight(flightCode);
+        }
+        finally {
+            readLock.unlock();
+        }
         return flight.getStatus();
     }
 
     @Override
     public void cancelFlight(String flightCode) throws RemoteException {
-        Flight flight = getFlight(flightCode);
-        flight.setStatus(FlightStatus.CANCELLED);
-        notifyFlightCancelled(flightCode);
+        readLock.lock();
+        Flight flight;
+        try {
+            flight = getFlight(flightCode);
+        }
+        finally {
+            readLock.unlock();
+        }
+        writeLock.lock();
+        try {
+            flight.setStatus(FlightStatus.CANCELLED);
+        }
+        finally {
+            notifyFlightCancelled(flightCode);
+            writeLock.unlock();
+        }
     }
 
     @Override
     public void confirmFlight(String flightCode) throws RemoteException {
-        Flight flight = getFlight(flightCode);
-        flight.setStatus(FlightStatus.CONFIRMED);
-        notifyFlightConfirmed(flightCode);
+        readLock.lock();
+        Flight flight;
+        try {
+            flight = getFlight(flightCode);
+
+        }
+        finally {
+            readLock.unlock();
+        }
+        writeLock.lock();
+        try {
+            flight.setStatus(FlightStatus.CONFIRMED);
+        }
+        finally {
+            writeLock.unlock();
+            notifyFlightConfirmed(flightCode);
+        }
     }
 
     @Override
     public void reprogramFlightsTickets() throws RemoteException {
-        List<Flight> reprogramFlights = flights.values().stream()
-                .filter(flight -> flight.getStatus().equals(FlightStatus.CANCELLED))
-                .sorted(Comparator.comparing(Flight::getFlightCode)).collect(Collectors.toList());
+        readLock.lock();
+        List<Flight> reprogramFlights;
+        try {
+            reprogramFlights = flights.values().stream()
+                    .filter(flight -> flight.getStatus().equals(FlightStatus.CANCELLED))
+                    .sorted(Comparator.comparing(Flight::getFlightCode)).collect(Collectors.toList());
+        }
 
-        for (Flight f : reprogramFlights)
-            processFlight(f);
+        finally {
+            readLock.unlock();
+        }
+
+        for (Flight f : reprogramFlights) {
+            writeLock.lock();
+            try { processFlight(f); }
+            finally { writeLock.unlock(); }
+        }
     }
 
     private void processFlight(Flight oldFlight) {
-        List<Flight> possibleFlights = flights.values().stream().filter(
+        List<Flight> possibleFlights;
+        possibleFlights = flights.values().stream().filter(
                 flight -> flight.getDestinationCode().equals(oldFlight.getDestinationCode())).filter(
                 flight -> flight.getStatus().equals(FlightStatus.PENDING)
         ).collect(Collectors.toList());
@@ -141,99 +196,178 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     @Override
     public boolean isAvailable(String flightCode, int row, char column) throws RemoteException {
-        Flight flight = getFlight(flightCode);
-        return getSeat(flight, row, column).isAvailable();
+        readLock.lock();
+        Flight flight;
+        boolean isSeatAvailable;
+        try {
+            flight = getFlight(flightCode);
+            isSeatAvailable = getSeat(flight, row, column).isAvailable();
+        }
+        finally {
+            readLock.unlock();
+        }
+        return isSeatAvailable;
     }
 
     @Override
     public void assignSeat(String flightCode, String passengerName, int row, char column) throws RemoteException {
-        Flight flight = flights.get(flightCode);
-        Seat seat = getSeat(flight, row, column);
-        Ticket ticket = getTicket(flight, passengerName);
-
-        if(getOldSeat(flight, passengerName).isPresent())
-            throw new PassengerAlreadyInFlightException(passengerName, flightCode);
-
-        checkSeat(flight, seat, ticket);
-        seat.setTicket(ticket);
-        notifySeatAssigned(flightCode, row, column);
+        Flight flight;
+        Seat seat;
+        Ticket ticket;
+        readLock.lock();
+        try {
+            flight = flights.get(flightCode);
+            seat = getSeat(flight, row, column);
+            ticket = getTicket(flight, passengerName);
+        }
+        finally {
+            readLock.unlock();
+        }
+        writeLock.lock();
+        try {
+            if(getOldSeat(flight, passengerName).isPresent())
+                throw new PassengerAlreadyInFlightException(passengerName, flightCode);
+            checkSeat(flight, seat, ticket);
+            seat.setTicket(ticket);
+        }
+        finally {
+            writeLock.unlock();
+            notifySeatAssigned(flightCode, row, column);
+        }
     }
 
     @Override
     public void changeSeat(String flightCode, String passengerName, int row, char column) throws RemoteException {
-        Flight flight = flights.get(flightCode);
-        Seat newSeat = getSeat(flight, row, column);
-        Ticket ticket = getTicket(flight, passengerName);
+        Flight flight;
+        Seat newSeat;
+        Ticket ticket;
+        Optional<Seat> oldSeat;
+        readLock.lock();
+        try {
+            flight = flights.get(flightCode);
+            newSeat = getSeat(flight, row, column);
+            ticket = getTicket(flight, passengerName);
+            oldSeat = getOldSeat(flight, passengerName);
 
-        Optional<Seat> oldSeat = getOldSeat(flight, passengerName);
-        if(!oldSeat.isPresent())
-            throw new PassengerNotInFlightException(passengerName, flightCode);
+        }
+        finally {
+            readLock.unlock();
+        }
+        writeLock.lock();
+        try {
+            if(!oldSeat.isPresent())
+                throw new PassengerNotInFlightException(passengerName, flightCode);
 
-        checkSeat(flight, newSeat, ticket);
-        notifySeatChanged(flightCode, oldSeat.get().getRow(), oldSeat.get().getColumn(), row, column,
-                newSeat.getCategory().toString(), oldSeat.get().getCategory().toString());
-        oldSeat.get().setTicket(null);
-        newSeat.setTicket(ticket);
+            checkSeat(flight, newSeat, ticket);
+
+            oldSeat.get().setTicket(null);
+            newSeat.setTicket(ticket);
+        }
+        finally {
+            writeLock.unlock();
+            notifySeatChanged(flightCode, oldSeat.get().getRow(), oldSeat.get().getColumn(), row, column,
+                    newSeat.getCategory().toString(), oldSeat.get().getCategory().toString());
+        }
     }
 
     @Override
     public List<AlternativeFlight> getAlternativeFlights(String flightCode, String passengerName) throws RemoteException {
-        Flight baseFlight = getFlight(flightCode);
-        Ticket baseTicket = getTicket(baseFlight,passengerName);
-
-        List<Flight> alternativeFlights = getAlternativeFlightsList(baseFlight.getDestinationCode(), passengerName);
-
+        Flight baseFlight;
+        Ticket baseTicket;
+        List<Flight> alternativeFlights;
         List<AlternativeFlight> toReturn = new ArrayList<>();
-        for(int i = 0; i <= baseTicket.getCategory().ordinal(); i++) {
-            for(Flight f : alternativeFlights) {
-                int finalI = i;
-                long count = f.getAirplane().getSeats().values().stream().
-                        flatMap(row -> row.values().stream()).
-                        filter(s -> s.isAvailable() && s.getCategory().ordinal() == finalI).count();
-                if(count != 0) {
-                    AlternativeFlight alt = new AlternativeFlight(f.getDestinationCode(), f.getFlightCode(),
-                            Category.values()[0],count);
-                    toReturn.add(alt);
+        readLock.lock();
+        try {
+            baseFlight = getFlight(flightCode);
+            baseTicket = getTicket(baseFlight,passengerName);
+            alternativeFlights = getAlternativeFlightsList(baseFlight.getDestinationCode(), passengerName);
+            for(int i = 0; i <= baseTicket.getCategory().ordinal(); i++) {
+                for(Flight f : alternativeFlights) {
+                    int finalI = i;
+                    long count = f.getAirplane().getSeats().values().stream().
+                            flatMap(row -> row.values().stream()).
+                            filter(s -> s.isAvailable() && s.getCategory().ordinal() == finalI).count();
+                    if(count != 0) {
+                        AlternativeFlight alt = new AlternativeFlight(f.getDestinationCode(), f.getFlightCode(),
+                                Category.values()[0],count);
+                        toReturn.add(alt);
+                    }
                 }
             }
+        }
+        finally {
+            readLock.unlock();
         }
         return toReturn;
     }
 
     @Override
     public void changeFlight(String oldFlightCode, String newFlightCode, String passengerName) throws RemoteException {
-        Flight oldFlight = getFlight(oldFlightCode);
-        Ticket oldTicket = getTicket(oldFlight,passengerName);
+        Flight oldFlight;
+        Ticket oldTicket;
+        List<Flight> alternativeFlights;
+        Optional<Flight> newFlight;
+        readLock.lock();
+        try {
+            oldFlight = getFlight(oldFlightCode);
+            oldTicket = getTicket(oldFlight,passengerName);
+            alternativeFlights = getAlternativeFlightsList(oldFlightCode, passengerName);
+            newFlight = alternativeFlights.stream().filter(flight -> flight.getFlightCode().equals(newFlightCode)).findFirst();
 
-        List<Flight> alternativeFlights = getAlternativeFlightsList(oldFlightCode, passengerName);
-
-        Optional<Flight> newFlight = alternativeFlights.stream().filter(flight -> flight.getFlightCode().equals(newFlightCode)).findFirst();
-        if(!newFlight.isPresent())
-            throw new InvalidAlternativeFlightException(newFlightCode);
-
-        newFlight.get().getTickets().add(oldTicket);
-        oldFlight.getTickets().remove(oldTicket);
-        notifyTicketChanged(oldFlightCode, newFlightCode);
+        }
+        finally {
+            readLock.unlock();
+        }
+        writeLock.lock();
+        try {
+            if(!newFlight.isPresent())
+                throw new InvalidAlternativeFlightException(newFlightCode);
+            newFlight.get().getTickets().add(oldTicket);
+            oldFlight.getTickets().remove(oldTicket);
+        }
+        finally {
+            writeLock.unlock();
+            notifyTicketChanged(oldFlightCode, newFlightCode);
+        }
     }
 
-    //TODO: THREAD SAFE
     @Override
     public void registerPassenger(String flightCode, String passengerName, NotificationEventCallback callback) throws RemoteException {
-        if(getFlight(flightCode).getStatus().equals(FlightStatus.CONFIRMED))
-            throw new FlightAlreadyConfirmedException(flightCode);
-        List<NotificationEventCallback> callbacks = subscribers.computeIfAbsent(flightCode, k -> new ArrayList<>());
-        callbacks.add(callback);
-        notifySuccessfulRegistration(flightCode);
+        readLock.lock();
+        Flight flight;
+        try {
+            flight = getFlight(flightCode);
+        }
+        finally {
+            readLock.unlock();
+        }
+        writeLock.lock();
+        try {
+            if(flight.getStatus().equals(FlightStatus.CONFIRMED))
+                throw new FlightAlreadyConfirmedException(flightCode);
+            List<NotificationEventCallback> callbacks = subscribers.computeIfAbsent(flightCode, k -> new ArrayList<>());
+            callbacks.add(callback);
+        }
+        finally {
+            writeLock.unlock();
+            notifySuccessfulRegistration(flightCode);
+        }
     }
 
     @Override
     public List<Row> getFlightMap(String flightCode) throws RemoteException {
-        Flight flight = getFlight(flightCode);
-        List<Row> rows = new ArrayList<>();
-
-        for(Integer key : flight.getAirplane().getSeats().keySet()) {
-            List<Seat> seats = getSeatRow(flight, key);
-            rows.add(new Row(seats, key, seats.get(0).getCategory()));
+        List<Row> rows;
+        readLock.lock();
+        try {
+            Flight flight = getFlight(flightCode);
+            rows = new ArrayList<>();
+            for(Integer key : flight.getAirplane().getSeats().keySet()) {
+                List<Seat> seats = getSeatRow(flight, key);
+                rows.add(new Row(seats, key, seats.get(0).getCategory()));
+            }
+        }
+        finally {
+            readLock.unlock();
         }
 
         if(rows.isEmpty())
@@ -244,19 +378,24 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     @Override
     public List<Row> getFlightMapByCategory(String flightCode, Category category) throws RemoteException {
-        Flight flight = getFlight(flightCode);
-        List<Row> rows = new ArrayList<>();
-
+        List<Row> rows;
+        readLock.lock();
         //TODO REVISAR ESTILO
-        for(Integer key : flight.getAirplane().getSeats().keySet()) {
-            List<Seat> seats = getSeatRow(flight, key);
-            Category rowCategory = seats.get(0).getCategory();
-            if(rowCategory.equals(category))
-                rows.add(new Row(seats, key, rowCategory));
-            else if(rowCategory.ordinal() < category.ordinal())
-                break ;
+        try {
+            Flight flight = getFlight(flightCode);
+            rows = new ArrayList<>();
+            for(Integer key : flight.getAirplane().getSeats().keySet()) {
+                List<Seat> seats = getSeatRow(flight, key);
+                Category rowCategory = seats.get(0).getCategory();
+                if(rowCategory.equals(category))
+                    rows.add(new Row(seats, key, rowCategory));
+                else if(rowCategory.ordinal() < category.ordinal())
+                    break ;
+            }
         }
-
+        finally {
+            readLock.unlock();
+        }
         if(rows.isEmpty())
             throw new EmptyMapException();
 
@@ -265,9 +404,15 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     @Override
     public Row getFlightMapByRow(String flightCode, int row) throws RemoteException {
-        Flight flight = getFlight(flightCode);
-        List<Seat> seats = getSeatRow(flight, row);
-
+        List<Seat> seats;
+        readLock.lock();
+        try {
+            Flight flight = getFlight(flightCode);
+            seats = getSeatRow(flight, row);
+        }
+        finally {
+            readLock.unlock();
+        }
         if(seats.isEmpty())
             throw new EmptyMapException();
 
