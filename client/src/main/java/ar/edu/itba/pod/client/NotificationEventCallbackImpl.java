@@ -16,32 +16,32 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
     }
 
     @Override
-    public void confirmedFlight(String flightCode, String destinationCode) throws RemoteException {
-        logger.info("Flight"+ flightCode + "with destination "+ destinationCode + "was confirmed");
+    public void confirmedFlight(String flightCode, String destinationCode, int row, char column, String category) throws RemoteException {
+        logger.info("Your Flight "+ flightCode+ " with destination "+ destinationCode+" was confirmed and your seat is "+ category+" "+row+column);
     }
 
     @Override
-    public void cancelledFlight(String flightCode, String destinationCode) throws RemoteException {
-        logger.info("Flight"+ flightCode + "with destination "+ destinationCode + "was canceled");
+    public void cancelledFlight(String flightCode, String destinationCode, int row, char column, String category) throws RemoteException {
+        logger.info("Your Flight "+ flightCode+" with destination "+ destinationCode+ " was cancelled and your seat is "+ category+" "+row+column);
 
     }
 
 
     @Override
-    public void assignedSeat(String flightCode, String destinationCode, int row, char column) throws RemoteException {
-        logger.info("Flight"+ flightCode + "with destination "+ destinationCode + "have assigned a seat with category " + "in"+ row+'|'+column);//TODO: CATEGORIA Y ASIENTOSS?
+    public void assignedSeat(String flightCode, String destinationCode, int row, char column, String category) throws RemoteException {
+        logger.info("Your seat is"+category+" "+row+column +" for Flight"+flightCode+"with destination "+ destinationCode);
 
     }
 
     @Override
     public void movedSeat(String flightCode, String destinationCode, String category, int row, char column, String oldCategory, int oldRow, char oldColumn) throws RemoteException {
-        logger.info("Flight"+ flightCode + "with destination "+ destinationCode + "have changed the seat "+oldCategory+'|'+ oldRow+'|'+oldColumn+" to "+category+'|'+row+'|'+column);
+        logger.info("Your seat changed to "+category+" "+row+column+" from "+ oldCategory+" "+row+column+" for Flight "+ flightCode+ " with destination "+ destinationCode );
 
     }
 
     @Override
     public void changedTicket(String flightCode, String destinationCode,String newFlightCode) throws RemoteException {
-       logger.info("Flight"+ flightCode + "with destination "+ destinationCode + "have changed the ticket to flight "+newFlightCode);
+       logger.info("Your ticket changed to Flight "+ flightCode+" with destination "+ destinationCode+ " from Flight "+ flightCode+ " with destination "+ newFlightCode);
 
     }
 }
