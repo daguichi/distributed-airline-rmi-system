@@ -237,7 +237,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
         writeLock.lock();
         try {
-            if(getOldSeat(flight, passengerName).isPresent())
+            if(getPassengerSeat(flight, passengerName).isPresent())
                 throw new PassengerAlreadyInFlightException(passengerName, flightCode);
             checkSeat(flight, seat, ticket);
             seat.setTicket(ticket);
@@ -260,7 +260,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             flight = flights.get(flightCode);
             newSeat = getSeat(flight, row, column);
             ticket = getTicket(flight, passengerName);
-            oldSeat = getOldSeat(flight, passengerName);
+            oldSeat = getPassengerSeat(flight, passengerName);
 
         }
         finally {
@@ -467,7 +467,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     //If a seat is not available, it has a ticket assigned to it, ticket will be present
-    private Optional<Seat> getOldSeat(Flight flight, String passengerName) {
+    private Optional<Seat> getPassengerSeat(Flight flight, String passengerName) {
         return flight.getAirplane().getSeats().values().stream()
                 .flatMap(r -> r.values().stream())
                 .filter(s -> !s.isAvailable()
@@ -500,7 +500,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         for(String subscriber : toNotify) {
             executor.submit(() -> {
                 try {
-                    Optional<Seat> seat = getOldSeat(f, subscriber);
+                    Optional<Seat> seat = getPassengerSeat(f, subscriber);
                     if(!seat.isPresent())
                         throw new PassengerNotInFlightException(subscriber, f.getFlightCode());
                     subscribers.get(flightCode).get(subscriber).confirmedFlight(flightCode, f.getDestinationCode(), seat.get().getRow(), seat.get().getColumn(), seat.get().getCategory().toString());
@@ -525,7 +525,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         for (String subscriber : toNotify) {
             executor.submit(() -> {
                 try {
-                    Optional<Seat> seat = getOldSeat(f, subscriber);
+                    Optional<Seat> seat = getPassengerSeat(f, subscriber);
                     if(!seat.isPresent())
                         throw new PassengerNotInFlightException(subscriber, f.getFlightCode());
                     subscribers.get(flightCode).get(subscriber).cancelledFlight(flightCode, f.getDestinationCode(), seat.get().getRow(), seat.get().getColumn(), seat.get().getCategory().toString());
@@ -550,7 +550,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         if (toNotify != null) {
                 executor.submit(() -> {
                     try {
-                        Optional<Seat> seat = getOldSeat(f, passengerName);
+                        Optional<Seat> seat = getPassengerSeat(f, passengerName);
                         if(!seat.isPresent())
                             throw new PassengerNotInFlightException(passengerName, f.getFlightCode());
                         toNotify.assignedSeat(flightCode, f.getDestinationCode(), row, column, seat.get().getCategory().toString());
