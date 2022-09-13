@@ -25,7 +25,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    private final Map<String, List<NotificationEventCallback>> subscribers;
+    private final Map<String, Map<String, NotificationEventCallback>> subscribers;
 
     private final static Logger logger = LoggerFactory.getLogger(Servant.class);
 
@@ -245,7 +245,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         finally {
             writeLock.unlock();
         }
-        notifySeatAssigned(flightCode, row, column);
+        notifySeatAssigned(flightCode, row, column, passengerName);
     }
 
     @Override
@@ -278,8 +278,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         finally {
             writeLock.unlock();
         }
-        notifySeatChanged(flightCode, oldSeat.get().getRow(), oldSeat.get().getColumn(), row, column,
-                newSeat.getCategory().toString(), oldSeat.get().getCategory().toString());
+        notifySeatChanged(passengerName, flightCode, oldSeat.get().getRow(), oldSeat.get().getColumn(), row, column);
     }
 
     @Override
@@ -357,8 +356,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         try {
             if(flight.getStatus().equals(FlightStatus.CONFIRMED))
                 throw new FlightAlreadyConfirmedException(flightCode);
-            List<NotificationEventCallback> callbacks = subscribers.computeIfAbsent(flightCode, k -> new ArrayList<>());
-            callbacks.add(callback);
+            Objects.requireNonNull(subscribers.putIfAbsent(flightCode, new HashMap<>())).putIfAbsent(passengerName, callback);
+
         }
         finally {
             writeLock.unlock();
@@ -489,19 +488,17 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         readLock.lock();
         try {
             f = getFlight(flightCode);
-            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+            toNotify = new ArrayList<>(subscribers.getOrDefault(flightCode, new HashMap<>()).values());
         }
         finally { readLock.unlock(); }
-        if(toNotify != null) {
-            for(NotificationEventCallback callback : toNotify) {
-                executor.submit(() -> {
-                    try {
-                        callback.confirmedFlight(flightCode, f.getDestinationCode());
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
+        for(NotificationEventCallback callback : toNotify) {
+            executor.submit(() -> {
+                try {
+                    callback.confirmedFlight(flightCode, f.getDestinationCode());
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 
@@ -511,86 +508,80 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         readLock.lock();
         try {
             f = getFlight(flightCode);
-            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+            toNotify = new ArrayList<>(subscribers.getOrDefault(flightCode, new HashMap<>()).values());
+        }
+        finally {
+            readLock.unlock();
+        }
+        for (NotificationEventCallback callback : toNotify) {
+            executor.submit(() -> {
+                try {
+                    callback.cancelledFlight(flightCode, f.getDestinationCode());
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+    }
+
+    private void notifySeatAssigned(String flightCode, int row, char column, String passengerName) {
+        Flight f;
+        NotificationEventCallback toNotify;
+        readLock.lock();
+        try {
+            f = getFlight(flightCode);
+            toNotify = subscribers.getOrDefault(flightCode, new HashMap<>()).getOrDefault(passengerName, null);
         }
         finally {
             readLock.unlock();
         }
         if (toNotify != null) {
-            for (NotificationEventCallback callback : toNotify) {
                 executor.submit(() -> {
                     try {
-                        callback.cancelledFlight(flightCode, f.getDestinationCode());
+                        toNotify.assignedSeat(flightCode, f.getDestinationCode(), row, column);
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
                 });
             }
-        }
     }
 
-    private void notifySeatAssigned(String flightCode, int row, char column) {
+    private void notifySeatChanged(String passengerName, String flightCode, int oldRow, char oldColumn, int newRow, char newColumn, String category, String oldCategory) {
         Flight f;
-        List<NotificationEventCallback> toNotify;
+        NotificationEventCallback toNotify;
         readLock.lock();
         try {
             f = getFlight(flightCode);
-            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+            toNotify = subscribers.getOrDefault(flightCode, new HashMap<>()).getOrDefault(passengerName, null);
         }
         finally {
             readLock.unlock();
         }
         if (toNotify != null) {
-            for (NotificationEventCallback callback : toNotify) {
                 executor.submit(() -> {
                     try {
-                        callback.assignedSeat(flightCode, f.getDestinationCode(), row, column);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-        }
-    }
-
-    private void notifySeatChanged(String flightCode, int oldRow, char oldColumn, int newRow, char newColumn, String category, String oldCategory) {
-        Flight f;
-        List<NotificationEventCallback> toNotify;
-        readLock.lock();
-        try {
-            f = getFlight(flightCode);
-            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
-        }
-        finally {
-            readLock.unlock();
-        }
-        if (toNotify != null) {
-            for (NotificationEventCallback callback : toNotify) {
-                executor.submit(() -> {
-                    try {
-                        callback.movedSeat(flightCode, f.getDestinationCode(), category,
+                        toNotify.movedSeat(flightCode, f.getDestinationCode(), category,
                                 newRow, newColumn, oldCategory, oldRow, oldColumn );
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
                 });
-            }
+
         }
     }
 
-    private void notifyTicketChanged(String flightCode, String newFlightCode) {
+    private void notifyTicketChanged(String passengerName, String flightCode, String newFlightCode) {
         Flight f;
-        List<NotificationEventCallback> toNotify;
+        NotificationEventCallback callback;
         readLock.lock();
         try {
             f = getFlight(flightCode);
-            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+            callback = subscribers.getOrDefault(flightCode, new HashMap<>()).getOrDefault(passengerName, null);
         }
         finally {
             readLock.unlock();
         }
-        if(toNotify != null) {
-            for(NotificationEventCallback callback : toNotify) {
+        if(callback != null) {
                 executor.submit(() -> {
                     try {
                         callback.changedTicket(flightCode, f.getDestinationCode(), newFlightCode);
@@ -602,11 +593,10 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
     }
 
-    private void notifySuccessfulRegistration(String flightCode) {
+    private void notifySuccessfulRegistration(String flightCode, String passengerName) {
         Flight f = getFlight(flightCode);
-        List<NotificationEventCallback> toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
-        if(toNotify != null) {
-            for(NotificationEventCallback callback : toNotify) {
+        NotificationEventCallback callback = subscribers.getOrDefault(flightCode, new HashMap<>()).getOrDefault(passengerName, null);
+        if(callback != null) {
                 executor.submit(() -> {
                     try {
                         callback.successfulRegistration(flightCode, f.getDestinationCode());
@@ -614,7 +604,6 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                         e.printStackTrace();
                     }
                 });
-            }
         }
     }
 
