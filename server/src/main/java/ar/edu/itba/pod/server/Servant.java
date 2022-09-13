@@ -207,18 +207,18 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     @Override
-    public boolean isAvailable(String flightCode, int row, char column) throws RemoteException {
+    public Seat isAvailable(String flightCode, int row, char column) throws RemoteException {
         readLock.lock();
         Flight flight;
-        boolean isSeatAvailable;
+        Seat retSeat;
         try {
             flight = getFlight(flightCode);
-            isSeatAvailable = getSeat(flight, row, column).isAvailable();
+            retSeat = getSeat(flight, row, column);
         }
         finally {
             readLock.unlock();
         }
-        return isSeatAvailable;
+        return retSeat;
     }
 
     @Override

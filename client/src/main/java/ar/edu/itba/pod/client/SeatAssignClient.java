@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.client;
 
+import ar.edu.itba.pod.model.Seat;
 import ar.edu.itba.pod.service.SeatAdministrationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,16 +21,6 @@ public class SeatAssignClient {
         String serverAddress = Optional.ofNullable(System.getProperty("serverAddress")).orElseThrow(IllegalArgumentException::new);
 
 
-        //Nullable params
-        String passengerName = System.getProperty("passenger");
-        int row = Integer.parseInt(System.getProperty("row"));
-        if (row <= 0) {
-            throw new IllegalArgumentException("Row must be greater than 0");
-        }
-        row -= 1;
-        char col = System.getProperty("col").charAt(0);
-        String originalFlightCode = System.getProperty("originalFlight");
-
         String[] address = serverAddress.split(":");
         String host = address[0];
         String port = address[1];
@@ -47,26 +38,45 @@ public class SeatAssignClient {
         }
 
         try {
-            //TODO CHECK PARAMETERS != NULL
-            logger.info("action name is " +actionName);
-            switch (actionName) {
-                case "status":
-                    seatAdministrationService.isAvailable(flightCode, row, col);
-                    break;
-                case "assign":
-                    seatAdministrationService.assignSeat(flightCode, passengerName, row, col);
-                    break;
-                case "move":
-                    seatAdministrationService.changeSeat(flightCode, passengerName, row, col);
-                    break;
-                case "alternatives":
-                    seatAdministrationService.getAlternativeFlights(flightCode, passengerName);
-                    break;
-                case "changeTicket":
-                    seatAdministrationService.changeFlight(originalFlightCode, flightCode, passengerName);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Action is not a valid option\n");
+            if ("status".equals(actionName) || "assign".equals(actionName) || "move".equals(actionName)) {
+                int row = Integer.parseInt(System.getProperty("row"));
+                if (row <= 0) {
+                    throw new IllegalArgumentException("Row must be greater than 0");
+                }
+                row -= 1;
+                char col = System.getProperty("col").charAt(0);
+                String passengerName;
+                switch (actionName) {
+                    case "status":
+                        Seat seat = seatAdministrationService.isAvailable(flightCode, row, col);
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Seat ").append(seat.getRow()+1).append(seat.getColumn()).append(" is ");
+                        if (seat.isAvailable()) {
+                            sb.append("FREE");
+                        } else {
+                            sb.append("ASSIGNED to ").append(seat.getTicket().get().getPassengerName());
+                        }
+                        sb.append(".");
+                        System.out.println(sb);
+                        break;
+                    case "assign":
+                        passengerName = System.getProperty("passenger");
+                        seatAdministrationService.assignSeat(flightCode, passengerName, row, col);
+                        break;
+                    case "move":
+                        passengerName = System.getProperty("passenger");
+                        seatAdministrationService.changeSeat(flightCode, passengerName, row, col);
+                        break;
+                }
+            } else if ("alternatives".equals(actionName)) {
+                String passengerName = System.getProperty("passenger");
+                seatAdministrationService.getAlternativeFlights(flightCode, passengerName);
+            } else if ("changeTicket".equals(actionName)) {
+                String passengerName = System.getProperty("passenger");
+                String originalFlightCode = System.getProperty("originalFlight");
+                seatAdministrationService.changeFlight(originalFlightCode, flightCode, passengerName);
+            } else {
+                throw new IllegalArgumentException("Action is not a valid option\n");
             }
         } catch (Exception e) {
             logger.error(e.getMessage());
