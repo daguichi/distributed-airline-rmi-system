@@ -387,7 +387,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
 
         if(rows.isEmpty())
-            throw new EmptyMapException();
+            throw new EmptySeatMapException();
 
         return rows;
     }
@@ -413,7 +413,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             readLock.unlock();
         }
         if(rows.isEmpty())
-            throw new EmptyMapException();
+            throw new EmptySeatMapException();
 
         return rows;
     }
@@ -430,7 +430,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             readLock.unlock();
         }
         if(seats.isEmpty())
-            throw new EmptyMapException();
+            throw new EmptySeatMapException();
 
         return new Row(seats, row, seats.get(0).getCategory());
     }
