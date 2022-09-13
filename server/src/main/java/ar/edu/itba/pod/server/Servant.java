@@ -418,7 +418,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             for(NotificationEventCallback callback : toNotify) {
                 executor.submit(() -> {
                     try {
-                        callback.successfullRegistration(flightCode, f.getDestinationCode());
+                        callback.successfulRegistration(flightCode, f.getDestinationCode());
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
