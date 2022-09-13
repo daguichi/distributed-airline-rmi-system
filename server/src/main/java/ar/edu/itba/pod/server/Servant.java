@@ -445,10 +445,10 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     private Seat getSeat(Flight flight, int row, char column) {
         Map<Integer, Seat> specifiedRow = flight.getAirplane().getSeats().get(row);
         if(specifiedRow == null)
-            throw new InvalidSeatException(row, column);
+            throw new InvalidSeatException(row + 1, column);
         Seat seat = specifiedRow.get((int) column - 'A');
         if(seat == null)
-            throw new InvalidSeatException(row, column);
+            throw new InvalidSeatException(row + 1, column);
         return seat;
     }
 

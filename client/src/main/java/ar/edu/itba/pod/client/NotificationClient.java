@@ -32,7 +32,7 @@ public class NotificationClient {
             flightNotificationService=(FlightNotificationService) registry.lookup(passengerName);
             flightNotificationService.registerPassenger(flightCode, passengerName, notificationEventCallback);
         } catch (Exception error) {
-            logger.error(error.toString());
+            logger.error(error.getMessage());
             return ;
         }
     }

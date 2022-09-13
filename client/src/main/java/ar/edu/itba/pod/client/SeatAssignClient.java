@@ -22,7 +22,11 @@ public class SeatAssignClient {
 
         //Nullable params
         String passengerName = System.getProperty("passenger");
-        char row = System.getProperty("row").charAt(0);
+        int row = Integer.parseInt(System.getProperty("row"));
+        if (row <= 0) {
+            throw new IllegalArgumentException("Row must be greater than 0");
+        }
+        row -= 1;
         char col = System.getProperty("col").charAt(0);
         String originalFlightCode = System.getProperty("originalFlight");
 
@@ -38,39 +42,35 @@ public class SeatAssignClient {
             seatAdministrationService = (SeatAdministrationService) registry.lookup("seat_administration");
         }
         catch (Exception error) {
-            logger.error(error.toString());
+            logger.error(error.getMessage());
             return ;
         }
 
-        //TODO CHECK PARAMETERS != NULL
-        switch (ActionType.valueOf(actionName)) {
-            case STATUS:
-                seatAdministrationService.isAvailable(flightCode, row, col);
-                break;
-            case ASSIGN:
-                seatAdministrationService.assignSeat(flightCode, passengerName, row, col);
-                break;
-            case MOVE:
-                seatAdministrationService.changeSeat(flightCode, passengerName, row, col);
-                break;
-            case ALTERNATIVES:
-                seatAdministrationService.getAlternativeFlights(flightCode, passengerName);
-                break;
-            case CHANGE_TICKET:
-                seatAdministrationService.changeFlight(originalFlightCode, flightCode, passengerName);
-                break;
-            default:
-                throw new IllegalArgumentException("Action is not a valid option\n");
+        try {
+            //TODO CHECK PARAMETERS != NULL
+            logger.info("action name is " +actionName);
+            switch (actionName) {
+                case "status":
+                    seatAdministrationService.isAvailable(flightCode, row, col);
+                    break;
+                case "assign":
+                    seatAdministrationService.assignSeat(flightCode, passengerName, row, col);
+                    break;
+                case "move":
+                    seatAdministrationService.changeSeat(flightCode, passengerName, row, col);
+                    break;
+                case "alternatives":
+                    seatAdministrationService.getAlternativeFlights(flightCode, passengerName);
+                    break;
+                case "changeTicket":
+                    seatAdministrationService.changeFlight(originalFlightCode, flightCode, passengerName);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Action is not a valid option\n");
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
         }
-    }
-
-    //TODO: IMPLEMENT STRING ATTRIBUTE
-    enum ActionType {
-        STATUS,
-        ASSIGN,
-        MOVE,
-        ALTERNATIVES,
-        CHANGE_TICKET
 
     }
 
