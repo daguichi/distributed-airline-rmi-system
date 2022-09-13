@@ -50,11 +50,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
             Airplane airplane = new Airplane(name, sections);
             airplanes.put(name, airplane);
-        }
-
-        // para debugging
-        for(Airplane airplane : airplanes.values()) {
-            System.out.println(airplane);
+            logger.info("Added airplane model: " + name);
         }
     }
 
@@ -82,30 +78,42 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     @Override
-    public void cancelFlight(String flightCode) throws RemoteException {
+    public FlightStatus cancelFlight(String flightCode) throws RemoteException {
         Flight flight = getFlight(flightCode);
+        if (flight.getStatus() != FlightStatus.PENDING) {
+            throw new NotPendingFlight(flightCode);
+        }
         flight.setStatus(FlightStatus.CANCELLED);
         notifyFlightCancelled(flightCode);
+        return FlightStatus.CANCELLED;
     }
 
     @Override
-    public void confirmFlight(String flightCode) throws RemoteException {
+    public FlightStatus confirmFlight(String flightCode) throws RemoteException {
         Flight flight = getFlight(flightCode);
+        if (flight.getStatus() != FlightStatus.PENDING) {
+            throw new NotPendingFlight(flightCode);
+        }
         flight.setStatus(FlightStatus.CONFIRMED);
         notifyFlightConfirmed(flightCode);
+        return FlightStatus.CONFIRMED;
     }
 
     @Override
-    public void reprogramFlightsTickets() throws RemoteException {
+    public ReticketWrapper reprogramFlightsTickets() throws RemoteException {
         List<Flight> reprogramFlights = flights.values().stream()
                 .filter(flight -> flight.getStatus().equals(FlightStatus.CANCELLED))
                 .sorted(Comparator.comparing(Flight::getFlightCode)).collect(Collectors.toList());
 
+//        5 tickets where changed.
+//Cannot find alternative flight for John with Ticket AA100
+        ReticketWrapper rw = new ReticketWrapper();
         for (Flight f : reprogramFlights)
-            processFlight(f);
+            processFlight(f, rw);
+        return rw;
     }
 
-    private void processFlight(Flight oldFlight) {
+    private void processFlight(Flight oldFlight, ReticketWrapper rw) {
         List<Flight> possibleFlights = flights.values().stream().filter(
                 flight -> flight.getDestinationCode().equals(oldFlight.getDestinationCode())).filter(
                 flight -> flight.getStatus().equals(FlightStatus.PENDING)
@@ -113,12 +121,13 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
         List<Ticket> tickets = new LinkedList<>(oldFlight.getTickets());
         tickets.sort(Comparator.comparing(Ticket::getPassengerName));
+
         for(Ticket t : tickets)
-            processTicket(t, possibleFlights, oldFlight);
+            processTicket(t, possibleFlights, oldFlight, rw);
     }
 
     //TODO ver si se puede mejorar
-    private void processTicket(Ticket ticket, List<Flight> possibleFlights, Flight oldFlight) {
+    private void processTicket(Ticket ticket, List<Flight> possibleFlights, Flight oldFlight, ReticketWrapper rw) {
         Flight newFlight = null;
         int category = ticket.getCategory().ordinal();
         while(newFlight == null && category >= 0) {
@@ -132,11 +141,14 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             category--;
         }
 
-        if(newFlight == null)
+        if(newFlight == null) {
+            rw.addNoAlternativeTicket(new ReticketWrapper.TicketInfo(ticket.getPassengerName(), oldFlight.getFlightCode()));
             return ;
+        }
 
         oldFlight.getTickets().remove(ticket);
         newFlight.getTickets().add(ticket);
+        rw.incrementTickets();
     }
 
     @Override
