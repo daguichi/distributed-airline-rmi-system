@@ -1,10 +1,11 @@
 package ar.edu.itba.pod.model;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Flight {
+public class Flight  implements Serializable {
 
     private Airplane airplane;
     private String flightCode;

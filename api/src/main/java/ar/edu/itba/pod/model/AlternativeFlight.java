@@ -1,6 +1,8 @@
 package ar.edu.itba.pod.model;
 
-public class AlternativeFlight {
+import java.io.Serializable;
+
+public class AlternativeFlight implements Serializable {
 
     private final String destinationCode;
     private final String flightCode;

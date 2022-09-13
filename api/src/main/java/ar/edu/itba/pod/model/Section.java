@@ -11,7 +11,7 @@ public class Section implements Comparable<Section>, Serializable {
     private int columnCount;
     private Map<Integer, Map<Integer, Ticket>> seatMap;
 
-    public Section(Category category, int columnCount, int rowCount) {
+    public Section(Category category,  int rowCount, int columnCount) {
         this.category = category;
         this.columnCount = columnCount;
         this.rowCount = rowCount;

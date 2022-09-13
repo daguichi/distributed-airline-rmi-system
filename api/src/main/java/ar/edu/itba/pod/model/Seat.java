@@ -2,9 +2,10 @@ package ar.edu.itba.pod.model;
 
 import ar.edu.itba.pod.model.Ticket;
 
+import java.io.Serializable;
 import java.util.Optional;
 
-public class Seat {
+public class Seat implements Serializable {
 
     private Ticket ticket;
     private Category category;

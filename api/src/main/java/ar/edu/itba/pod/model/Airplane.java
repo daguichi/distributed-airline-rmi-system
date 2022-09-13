@@ -1,10 +1,11 @@
 package ar.edu.itba.pod.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Airplane  {
+public class Airplane implements Serializable {
 
     private final String name;
     private Map<Integer, Map<Integer,Seat>> seats;

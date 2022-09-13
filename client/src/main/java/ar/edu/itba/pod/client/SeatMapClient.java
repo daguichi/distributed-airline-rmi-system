@@ -64,7 +64,7 @@ public class SeatMapClient {
             seatMapService = (SeatMapService) registry.lookup("seat_map");
         }
         catch (Exception error) {
-            logger.error(error.toString());
+            logger.error(error.getMessage());
             return ;
         }
 
@@ -84,7 +84,7 @@ public class SeatMapClient {
             else logger.info("There is no Seat Map matching query conditions\n");
         }
         catch (Exception e) {
-            logger.error(e.toString());
+            logger.error(e.getMessage());
         }
     }
 

@@ -373,10 +373,12 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         List<Row> rows;
         readLock.lock();
         try {
+            logger.info("Getting flight map for flight " + flightCode);
             Flight flight = getFlight(flightCode);
             rows = new ArrayList<>();
             for(Integer key : flight.getAirplane().getSeats().keySet()) {
                 List<Seat> seats = getSeatRow(flight, key);
+                logger.info("Adding row " + key + " to flight map with category " + seats.get(0).getCategory());
                 rows.add(new Row(seats, key, seats.get(0).getCategory()));
             }
         }

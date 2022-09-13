@@ -1,8 +1,9 @@
 package ar.edu.itba.pod.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Row {
+public class Row implements Serializable {
 
     private List<Seat> seatList;
     private int row;
