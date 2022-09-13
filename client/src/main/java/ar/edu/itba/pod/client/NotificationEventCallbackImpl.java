@@ -11,7 +11,7 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
     private static final Logger logger = LoggerFactory.getLogger(NotificationEventCallback.class);
 
     @Override
-    public void successfullRegistration(String flightCode, String destinationCode ) throws RemoteException {
+    public void successfulRegistration(String flightCode, String destinationCode ) throws RemoteException {
         logger.info("You are following Flight "+ flightCode +" with destination " + destinationCode);
     }
 
@@ -26,11 +26,7 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
 
     }
 
-    @Override
-    public void assignedSeat(String flightCode, String destinationCode, String category, int row, char column) throws RemoteException {
-        logger.info("Flight"+ flightCode + "with destination "+ destinationCode + "have assigned a seat with category "+ category + "in"+ row+'|'+column); //TODO: CATEGORIA Y ASIENTOSS?
 
-    }
     @Override
     public void assignedSeat(String flightCode, String destinationCode, int row, char column) throws RemoteException {
         logger.info("Flight"+ flightCode + "with destination "+ destinationCode + "have assigned a seat with category " + "in"+ row+'|'+column);//TODO: CATEGORIA Y ASIENTOSS?
