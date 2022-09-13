@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.model;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ public class Airplane implements Serializable {
         this.name = name;
         seats = new HashMap<>();
         int rows = 0;
+        sections.sort(Comparator.comparing(Section::getCategory).reversed());
         for(Section s : sections) {
             for(int i = rows; i < s.getRowCount() + rows; i++) {
                 seats.put(i, new HashMap<>());
@@ -22,6 +24,7 @@ public class Airplane implements Serializable {
             }
             rows += s.getRowCount();
         }
+
     }
 
 

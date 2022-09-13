@@ -26,9 +26,10 @@ public class SeatMapClient {
         for(Row row : flightRows) {
             col = 0;
             for(Seat seat : row.getSeatList()){
-                writer.append(String.format("| %s %s %s ", row.getRow() < 10 ? "0" + row.getRow() : row.getRow() ,
-                        col + 'A',
-                        seat.getTicket().get().getPassengerName().toCharArray()[0]));
+                writer.append(String.format("| %s %c %s ", row.getRow() < 9 ? "0" + (row.getRow()+1) : (row.getRow()+1) ,
+                        (char) (col + 'A'),
+                        seat.getTicket().isPresent() ? (char) seat.getTicket().get().getPassengerName().toCharArray()[0] : "*"));
+                col++;
             }
             writer.append(String.format("|   %s\n", row.getCategory().toString()));
         }
@@ -75,7 +76,11 @@ public class SeatMapClient {
             }
             else if(row != null) {
                 rowList = new ArrayList<>();
-                rowList.add(seatMapService.getFlightMapByRow(flightCode, Integer.parseInt(row)));
+                int rowNumber = Integer.parseInt(row);
+                if (rowNumber <= 0) {
+                    throw new IllegalArgumentException("Row number must be greater than 0");
+                }
+                rowList.add(seatMapService.getFlightMapByRow(flightCode, rowNumber-1));
             }
             else
                 rowList = seatMapService.getFlightMap(flightCode);

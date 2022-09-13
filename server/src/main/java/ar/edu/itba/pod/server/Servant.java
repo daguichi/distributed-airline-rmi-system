@@ -385,7 +385,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         finally {
             readLock.unlock();
         }
-
+        logger.info(rows.size() + " rows added to flight map");
         if(rows.isEmpty())
             throw new EmptySeatMapException();
 
