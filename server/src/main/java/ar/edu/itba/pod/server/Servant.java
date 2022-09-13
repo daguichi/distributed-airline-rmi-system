@@ -112,9 +112,9 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             flight.setStatus(FlightStatus.CANCELLED);
         }
         finally {
-            notifyFlightCancelled(flightCode);
             writeLock.unlock();
         }
+        notifyFlightCancelled(flightCode);
     }
 
     @Override
@@ -134,8 +134,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
         finally {
             writeLock.unlock();
-            notifyFlightConfirmed(flightCode);
         }
+        notifyFlightConfirmed(flightCode);
     }
 
     @Override
@@ -232,8 +232,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
         finally {
             writeLock.unlock();
-            notifySeatAssigned(flightCode, row, column);
         }
+        notifySeatAssigned(flightCode, row, column);
     }
 
     @Override
@@ -265,9 +265,9 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
         finally {
             writeLock.unlock();
-            notifySeatChanged(flightCode, oldSeat.get().getRow(), oldSeat.get().getColumn(), row, column,
-                    newSeat.getCategory().toString(), oldSeat.get().getCategory().toString());
         }
+        notifySeatChanged(flightCode, oldSeat.get().getRow(), oldSeat.get().getColumn(), row, column,
+                newSeat.getCategory().toString(), oldSeat.get().getCategory().toString());
     }
 
     @Override
@@ -327,8 +327,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
         finally {
             writeLock.unlock();
-            notifyTicketChanged(oldFlightCode, newFlightCode);
         }
+        notifyTicketChanged(oldFlightCode, newFlightCode);
     }
 
     @Override
@@ -350,8 +350,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
         finally {
             writeLock.unlock();
-            notifySuccessfulRegistration(flightCode);
         }
+        notifySuccessfulRegistration(flightCode);
     }
 
     @Override
@@ -472,9 +472,14 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
 
     //Notifications handler
     private void notifyFlightConfirmed(String flightCode) {
-        //TODO: make this thread safe
-        Flight f = getFlight(flightCode);
-        List<NotificationEventCallback> toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        Flight f;
+        List<NotificationEventCallback> toNotify;
+        readLock.lock();
+        try {
+            f = getFlight(flightCode);
+            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        }
+        finally { readLock.unlock(); }
         if(toNotify != null) {
             for(NotificationEventCallback callback : toNotify) {
                 executor.submit(() -> {
@@ -489,9 +494,16 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     private void notifyFlightCancelled(String flightCode) {
-        //TODO: make this thread safe
-        Flight f = getFlight(flightCode);
-        List<NotificationEventCallback> toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        Flight f;
+        List<NotificationEventCallback> toNotify;
+        readLock.lock();
+        try {
+            f = getFlight(flightCode);
+            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        }
+        finally {
+            readLock.unlock();
+        }
         if (toNotify != null) {
             for (NotificationEventCallback callback : toNotify) {
                 executor.submit(() -> {
@@ -506,9 +518,16 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     private void notifySeatAssigned(String flightCode, int row, char column) {
-        //TODO: make this thread safe
-        Flight f = getFlight(flightCode);
-        List<NotificationEventCallback> toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        Flight f;
+        List<NotificationEventCallback> toNotify;
+        readLock.lock();
+        try {
+            f = getFlight(flightCode);
+            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        }
+        finally {
+            readLock.unlock();
+        }
         if (toNotify != null) {
             for (NotificationEventCallback callback : toNotify) {
                 executor.submit(() -> {
@@ -523,9 +542,16 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     private void notifySeatChanged(String flightCode, int oldRow, char oldColumn, int newRow, char newColumn, String category, String oldCategory) {
-        //TODO: make this thread safe
-        Flight f = getFlight(flightCode);
-        List<NotificationEventCallback> toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        Flight f;
+        List<NotificationEventCallback> toNotify;
+        readLock.lock();
+        try {
+            f = getFlight(flightCode);
+            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        }
+        finally {
+            readLock.unlock();
+        }
         if (toNotify != null) {
             for (NotificationEventCallback callback : toNotify) {
                 executor.submit(() -> {
@@ -541,8 +567,16 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     private void notifyTicketChanged(String flightCode, String newFlightCode) {
-        Flight f = getFlight(flightCode);
-        List<NotificationEventCallback> toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        Flight f;
+        List<NotificationEventCallback> toNotify;
+        readLock.lock();
+        try {
+            f = getFlight(flightCode);
+            toNotify = subscribers.getOrDefault(flightCode, new ArrayList<>());
+        }
+        finally {
+            readLock.unlock();
+        }
         if(toNotify != null) {
             for(NotificationEventCallback callback : toNotify) {
                 executor.submit(() -> {
