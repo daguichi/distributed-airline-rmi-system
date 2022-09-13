@@ -296,7 +296,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             baseFlight = getFlight(flightCode);
             baseTicket = getTicket(baseFlight,passengerName);
             alternativeFlights = getAlternativeFlightsList(baseFlight.getDestinationCode(), passengerName);
-            for(int i = 0; i <= baseTicket.getCategory().ordinal(); i++) {
+            for(int i = baseTicket.getCategory().ordinal(); i >= 0 ; i--) {
                 for(Flight f : alternativeFlights) {
                     int finalI = i;
                     long count = f.getAirplane().getSeats().values().stream().
@@ -304,7 +304,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                             filter(s -> s.isAvailable() && s.getCategory().ordinal() == finalI).count();
                     if(count != 0) {
                         AlternativeFlight alt = new AlternativeFlight(f.getDestinationCode(), f.getFlightCode(),
-                                Category.values()[0],count);
+                                Category.values()[i],count);
                         toReturn.add(alt);
                     }
                 }

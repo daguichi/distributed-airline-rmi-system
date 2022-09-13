@@ -31,4 +31,5 @@ public class AlternativeFlight implements Serializable {
     public long getAvailableSeats() {
         return availableSeats;
     }
+
 }

@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.client;
 
+import ar.edu.itba.pod.model.AlternativeFlight;
 import ar.edu.itba.pod.model.Seat;
 import ar.edu.itba.pod.service.SeatAdministrationService;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.List;
 import java.util.Optional;
 
 public class SeatAssignClient {
@@ -70,7 +72,11 @@ public class SeatAssignClient {
                 }
             } else if ("alternatives".equals(actionName)) {
                 String passengerName = System.getProperty("passenger");
-                seatAdministrationService.getAlternativeFlights(flightCode, passengerName);
+                List<AlternativeFlight> alts = seatAdministrationService.getAlternativeFlights(flightCode, passengerName);
+                for (AlternativeFlight alt : alts) {
+                    System.out.println(alt.getDestinationCode() + " | " + alt.getFlightCode() +
+                            " | " + alt.getAvailableSeats() + " " + alt.getCategory());
+                }
             } else if ("changeTicket".equals(actionName)) {
                 String passengerName = System.getProperty("passenger");
                 String originalFlightCode = System.getProperty("originalFlight");
