@@ -125,7 +125,7 @@ public class AdminClient {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         logger.info("Added {} airplanes", added);
@@ -159,7 +159,7 @@ public class AdminClient {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         logger.info("Added {} flights", added);

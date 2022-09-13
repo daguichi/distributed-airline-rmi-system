@@ -133,14 +133,14 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         writeLock.lock();
         try {
             flight.setStatus(FlightStatus.CONFIRMED);
-            HashMap.remove(flightCode);
         }
         finally {
             writeLock.unlock();
         }
         notifyFlightConfirmed(flightCode);
-        return FlightStatus.CONFIRMED;
+        subscribers.remove(flightCode);
 
+        return FlightStatus.CONFIRMED;
     }
 
     @Override
@@ -295,7 +295,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         try {
             baseFlight = getFlight(flightCode);
             baseTicket = getTicket(baseFlight,passengerName);
-            alternativeFlights = getAlternativeFlightsList(baseFlight.getDestinationCode(), passengerName);
+            alternativeFlights = getAlternativeFlightsList(baseFlight, passengerName);
             for(int i = baseTicket.getCategory().ordinal(); i >= 0 ; i--) {
                 for(Flight f : alternativeFlights) {
                     int finalI = i;
@@ -313,6 +313,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         finally {
             readLock.unlock();
         }
+        toReturn.sort(Comparator.comparing(AlternativeFlight::getCategory).thenComparing(AlternativeFlight::getAvailableSeats).reversed().thenComparing(AlternativeFlight::getFlightCode));
         return toReturn;
     }
 
@@ -326,7 +327,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         try {
             oldFlight = getFlight(oldFlightCode);
             oldTicket = getTicket(oldFlight,passengerName);
-            alternativeFlights = getAlternativeFlightsList(oldFlightCode, passengerName);
+            alternativeFlights = getAlternativeFlightsList(oldFlight, passengerName);
             newFlight = alternativeFlights.stream().filter(flight -> flight.getFlightCode().equals(newFlightCode)).findFirst();
 
         }
@@ -352,6 +353,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         Flight flight;
         try {
             flight = getFlight(flightCode);
+            logger.info("Flight gotten " + flightCode);
         }
         finally {
             readLock.unlock();
@@ -360,13 +362,15 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         try {
             if(flight.getStatus().equals(FlightStatus.CONFIRMED))
                 throw new FlightAlreadyConfirmedException(flightCode);
-            Objects.requireNonNull(subscribers.putIfAbsent(flightCode, new HashMap<>())).putIfAbsent(passengerName, callback);
 
+            subscribers.putIfAbsent(flightCode, new HashMap<>());
+            subscribers.get(flightCode).putIfAbsent(passengerName, callback);
         }
         finally {
             writeLock.unlock();
         }
-        notifySuccessfulRegistration(passengerName, flightCode);
+        logger.info("About to enter notifySuccessfulRegistration with passenger " + passengerName + " and flight " + flightCode);
+        notifySuccessfulRegistration(flightCode, passengerName);
     }
 
     @Override
@@ -481,11 +485,13 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         return new ArrayList<>(flight.getAirplane().getSeats().get(row).values());
     }
 
-    private List<Flight> getAlternativeFlightsList(String oldFlightCode, String passengerName) {
+    private List<Flight> getAlternativeFlightsList(Flight oldFlight, String passengerName) {
         return flights.values().stream().filter(
-                flight -> flight.getDestinationCode().equals(oldFlightCode)).filter(
-                flight -> flight.getStatus().equals(FlightStatus.PENDING)).filter(flight -> !flight.getFlightCode().equals(oldFlightCode)
-        ).filter( flight -> flight.getTickets().stream().noneMatch(t -> t.getPassengerName().equals(passengerName))).collect(Collectors.toList());
+                flight -> flight.getDestinationCode().equals(oldFlight.getDestinationCode())).filter(
+                flight -> flight.getStatus().equals(FlightStatus.PENDING)).filter(flight -> !flight.getFlightCode().
+                        equals(oldFlight.getFlightCode())
+        ).filter( flight -> flight.getTickets().stream().noneMatch(t -> t.getPassengerName().equals(passengerName))).
+                collect(Collectors.toList());
     }
 
     //Notifications handler
@@ -506,7 +512,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                         throw new PassengerNotInFlightException(subscriber, f.getFlightCode());
                     subscribers.get(flightCode).get(subscriber).confirmedFlight(flightCode, f.getDestinationCode(), seat.get().getRow(), seat.get().getColumn(), seat.get().getCategory().toString());
                 } catch (RemoteException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
             });
         }
@@ -531,7 +537,8 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                         throw new PassengerNotInFlightException(subscriber, f.getFlightCode());
                     subscribers.get(flightCode).get(subscriber).cancelledFlight(flightCode, f.getDestinationCode(), seat.get().getRow(), seat.get().getColumn(), seat.get().getCategory().toString());
                 } catch (RemoteException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
+
                 }
             });
         }
@@ -556,7 +563,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                             throw new PassengerNotInFlightException(passengerName, f.getFlightCode());
                         toNotify.assignedSeat(flightCode, f.getDestinationCode(), row, column, seat.get().getCategory().toString());
                     } catch (RemoteException e) {
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                     }
                 });
             }
@@ -579,7 +586,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                         toNotify.movedSeat(flightCode, f.getDestinationCode(), category,
                                 newRow, newColumn, oldCategory, oldRow, oldColumn );
                     } catch (RemoteException e) {
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                     }
                 });
 
@@ -602,7 +609,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                     try {
                         callback.changedTicket(flightCode, f.getDestinationCode(), newFlightCode);
                     } catch (RemoteException e) {
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                     }
                 });
         }
@@ -611,12 +618,15 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     private void notifySuccessfulRegistration(String flightCode, String passengerName) {
         Flight f = getFlight(flightCode);
         NotificationEventCallback callback = subscribers.getOrDefault(flightCode, new HashMap<>()).getOrDefault(passengerName, null);
+        logger.info("Callback is null? " + (callback == null));
         if(callback != null) {
                 executor.submit(() -> {
                     try {
+                        logger.info("About to notify successful registration for " + passengerName + " in flight " + flightCode);
                         callback.successfulRegistration(flightCode, f.getDestinationCode());
+                        logger.info("Successfully notified successful registration for " + passengerName + " in flight " + flightCode);
                     } catch (RemoteException e) {
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                     }
                 });
         }
