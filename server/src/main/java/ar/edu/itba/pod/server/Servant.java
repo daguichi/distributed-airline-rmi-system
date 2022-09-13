@@ -133,6 +133,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         writeLock.lock();
         try {
             flight.setStatus(FlightStatus.CONFIRMED);
+            HashMap.remove(flightCode);
         }
         finally {
             writeLock.unlock();
