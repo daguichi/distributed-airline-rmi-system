@@ -56,16 +56,22 @@ public class AdminClient {
             String inPath = parseParameter(args, "-DinPath");
             switch (action) {
                 case "models":
+                    List<AirplaneWrapper> airplanes = new ArrayList<>();
                     for (AirplaneWrapper airplane : parseAirplanes(inPath)) {
-                        service.addPlaneModel(airplane.getModelName(), airplane.getSections());
-                        logger.info("Added airplane model: " + airplane.getModelName());
+                        airplanes.add(service.addPlaneModel(airplane.getModelName(), airplane.getSections()));
                     }
+                    airplanes.stream().filter(airplane -> !airplane.isValid()).forEach(airplane -> logger.error("Cannot add model " + airplane.getModelName()+ "."));
+                    long added = airplanes.stream().filter(AirplaneWrapper::isValid).count();
+                    logger.info(added + " models added.");
                     break;
                 case "flights":
+                    List<FlightWrapper> flights = new ArrayList<>();
                     for (FlightWrapper flight : parseFlights(inPath)) {
-                        service.addFlight(flight.getModelName(), flight.getFlightCode(), flight.getDestinationCode(), flight.getTickets());
-                        logger.info("Added flight: " + flight.getFlightCode());
+                        flights.add(service.addFlight(flight.getModelName(), flight.getFlightCode(), flight.getDestinationCode(), flight.getTickets()));
                     }
+                    flights.stream().filter(flight -> !flight.isValid()).forEach(flight -> logger.error("Cannot add flight " + flight.getFlightCode() + "."));
+                    added = flights.stream().filter(FlightWrapper::isValid).count();
+                    logger.info(added + " flights added.");
                     break;
             }
         } else if ("status".equals(action) || "confirm".equals(action) || "cancel".equals(action)) {
@@ -74,15 +80,15 @@ public class AdminClient {
             switch (action) {
                 case "status":
                     ret = service.getFlightStatus(flightCode);
-                    logger.info("Flight status: " + ret);
+                    logger.info("Flight " + flightCode + " is "+ ret + ".");
                     break;
                 case "confirm":
                     ret = service.confirmFlight(flightCode);
-                    logger.info("Flight status: " + ret);
+                    logger.info("Flight " + flightCode + " is "+ ret + ".");
                     break;
                 case "cancel":
                     ret = service.cancelFlight(flightCode);
-                    logger.info("Flight status: " + ret);
+                    logger.info("Flight " + flightCode + " is "+ ret + ".");
                     break;
             }
         } else if ("reticketing".equals(action)) {
@@ -120,7 +126,7 @@ public class AdminClient {
                     Section section = new Section(category, rows, columns);
                     sectionList.add(section);
                 }
-                ret.add(new AirplaneWrapper(modelName, sectionList));
+                ret.add(new AirplaneWrapper(modelName, sectionList, false));
                 added++;
             }
 
@@ -128,7 +134,6 @@ public class AdminClient {
             logger.error(e.getMessage());
         }
 
-        logger.info("Added {} airplanes", added);
         return ret;
     }
 
@@ -153,7 +158,7 @@ public class AdminClient {
                     Ticket ticket = new Ticket(passengerName, category);
                     tickets.add(ticket);
                 }
-                FlightWrapper flight = new FlightWrapper(modelName, flightCode, destinationCode, tickets);
+                FlightWrapper flight = new FlightWrapper(modelName, flightCode, destinationCode, tickets, false);
                 ret.add(flight);
                 added++;
             }
@@ -162,7 +167,6 @@ public class AdminClient {
             logger.error(e.getMessage());
         }
 
-        logger.info("Added {} flights", added);
         return ret;
     }
 }

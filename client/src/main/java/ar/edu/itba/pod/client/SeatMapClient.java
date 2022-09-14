@@ -26,7 +26,7 @@ public class SeatMapClient {
         for(Row row : flightRows) {
             col = 0;
             for(Seat seat : row.getSeatList()){
-                writer.append(String.format("| %s %c %s ", row.getRow() < 9 ? "0" + (row.getRow()+1) : (row.getRow()+1) ,
+                writer.append(String.format("| %02d %c %s ", (row.getRow()+1) ,
                         (char) (col + 'A'),
                         seat.getTicket().isPresent() ? (char) seat.getTicket().get().getPassengerName().toCharArray()[0] : "*"));
                 col++;

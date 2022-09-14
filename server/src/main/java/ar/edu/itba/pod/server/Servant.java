@@ -39,45 +39,44 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     @Override
-    public void addPlaneModel(String name, List<Section> sections) throws RemoteException {
-        if(name.isEmpty() || sections.isEmpty())
-            throw new InvalidAirplaneException();
-
+    public AirplaneWrapper addPlaneModel(String name, List<Section> sections) throws RemoteException {
+        boolean valid = true;
+        if(name.isEmpty() || sections.isEmpty()) valid = false;
         for(Section s : sections) {
-            if(s.getColumnCount() <= 0 || s.getRowCount() <= 0)
-                throw new InvalidSectionException();
+            if (s.getColumnCount() <= 0 || s.getRowCount() <= 0)
+                valid = false;
         }
 
         writeLock.lock();
         try {
             if(airplanes.containsKey(name))
-                throw new AirplaneAlreadyExistsException(name);
+                valid = false;
             Airplane airplane = new Airplane(name, sections);
             airplanes.put(name, airplane);
-            logger.info("Added airplane model: " + name);
         }
         finally {
             writeLock.unlock();
         }
+        return new AirplaneWrapper(name, sections, valid);
     }
 
     @Override
-    public void addFlight(String modelName, String flightCode, String destinationCode, List<Ticket> tickets) throws RemoteException {
+    public FlightWrapper addFlight(String modelName, String flightCode, String destinationCode, List<Ticket> tickets) throws RemoteException {
         Airplane airplane = airplanes.get(modelName);
-
+        boolean valid = true;
         if (airplane == null)
-            throw new NoSuchAirplaneException(modelName);
+            valid = false;
         writeLock.lock();
         try {
             if(flights.containsKey(flightCode))
-                throw new FlightAlreadyExistsException(flightCode);
+                valid = false;
             Flight flight = new Flight(airplane, flightCode, destinationCode, tickets, FlightStatus.PENDING);
             flights.put(flightCode, flight);
         }
         finally {
-            logger.info("Flight {} added", flightCode);
             writeLock.unlock();
         }
+        return new FlightWrapper(modelName, flightCode, destinationCode, tickets, valid);
     }
 
     @Override
