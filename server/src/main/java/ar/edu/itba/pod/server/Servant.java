@@ -345,6 +345,9 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             writeLock.unlock();
         }
         notifyTicketChanged(passengerName,oldFlightCode, newFlightCode);
+        Map<String, List<NotificationEventCallback>> oldFlightCodeSubs = subscribers.get(oldFlightCode);
+        subscribers.remove(oldFlightCode);
+        subscribers.put(newFlightCode, oldFlightCodeSubs);
     }
 
     @Override
@@ -638,5 +641,4 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
                 });
         }
     }
-
 }

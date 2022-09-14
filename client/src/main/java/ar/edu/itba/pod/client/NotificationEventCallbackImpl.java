@@ -23,6 +23,7 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
     @Override
     public void confirmedFlight(String flightCode, String destinationCode, String category) throws RemoteException {
         logger.info("Your Flight "+ flightCode+ " with destination "+ destinationCode+" was confirmed and your category is " +category +".");
+        unsubscribe();
     }
 
     @Override
@@ -52,6 +53,13 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
     @Override
     public void changedTicket(String flightCode, String destinationCode,String newFlightCode) throws RemoteException {
        logger.info("Your ticket changed to Flight "+ newFlightCode+" with destination "+ destinationCode+ " from Flight "+ flightCode+ " with destination "+ destinationCode+ ".");
+    }
 
+    @Override
+    public void unsubscribe() throws RemoteException {
+        Thread exitThread = new Thread(() -> {
+            System.exit(0);
+        });
+        exitThread.start();
     }
 }

@@ -21,4 +21,6 @@ public interface NotificationEventCallback extends Remote, Serializable {
 
     void changedTicket(String flightCode, String destinationCode, String newFlightCode) throws RemoteException;
 
+    void unsubscribe() throws RemoteException;
+
 }
