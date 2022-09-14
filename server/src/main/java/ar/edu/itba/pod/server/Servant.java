@@ -199,10 +199,11 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         Flight newFlight = null;
         int category = ticket.getCategory().ordinal();
         while(newFlight == null && category >= 0) {
+            int currentCategory = category;
             newFlight = possibleFlights.stream().filter(
                     flight -> flight.getAirplane().getSeats().values().stream().anyMatch(
                             row -> row.values().stream().anyMatch(
-                                    seat -> seat.isAvailable() && seat.getCategory().compareTo(ticket.getCategory()) == 0)
+                                    seat -> seat.isAvailable() && seat.getCategory().ordinal() == currentCategory)
                     )
             ).min(Comparator.comparing(Flight::availableSeats).thenComparing(flight -> flight.getAirplane().getName()))
                     .orElse(null);

@@ -39,17 +39,4 @@ public class Airplane implements Serializable {
                 "name='" + name + '\'' +
                 '}';
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Airplane airplane = (Airplane) o;
-        return Objects.equals(getName(), airplane.getName()) && Objects.equals(getSeats(), airplane.getSeats());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getName(), getSeats());
-    }
 }
