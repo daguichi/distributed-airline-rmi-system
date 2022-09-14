@@ -137,6 +137,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             writeLock.unlock();
         }
         notifyFlightConfirmed(flightCode);
+//        TODO: Ver donde ponemos este remove, deberia estar despues del submit del executor
         subscribers.remove(flightCode);
 
         return FlightStatus.CONFIRMED;
@@ -507,13 +508,17 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             executor.submit(() -> {
                 try {
                     Optional<Seat> seat = getPassengerSeat(f, subscriber);
-                    if(!seat.isPresent())
-                        throw new PassengerNotInFlightException(subscriber, f.getFlightCode());
-                    subscribers.get(flightCode).get(subscriber).confirmedFlight(flightCode, f.getDestinationCode(), seat.get().getRow(), seat.get().getColumn(), seat.get().getCategory().toString());
+                    if(seat.isPresent())
+                        subscribers.get(flightCode).get(subscriber).confirmedFlight(flightCode, f.getDestinationCode(), seat.get().getRow(), seat.get().getColumn(), seat.get().getCategory().toString());
+                    else {
+                        Ticket t = getTicket(f, subscriber);
+                        subscribers.get(flightCode).get(subscriber).confirmedFlight(flightCode, f.getDestinationCode(), t.getCategory().toString());
+                    }
                 } catch (RemoteException e) {
                     logger.error(e.getMessage());
                 }
             });
+
         }
     }
 
@@ -528,13 +533,16 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         finally {
             readLock.unlock();
         }
+
         for (String subscriber : toNotify) {
             executor.submit(() -> {
                 try {
                     Optional<Seat> seat = getPassengerSeat(f, subscriber);
-                    if(!seat.isPresent())
-                        throw new PassengerNotInFlightException(subscriber, f.getFlightCode());
-                    subscribers.get(flightCode).get(subscriber).cancelledFlight(flightCode, f.getDestinationCode(), seat.get().getRow(), seat.get().getColumn(), seat.get().getCategory().toString());
+                    if (seat.isPresent()) subscribers.get(flightCode).get(subscriber).cancelledFlight(flightCode, f.getDestinationCode(), seat.get().getRow(), seat.get().getColumn(), seat.get().getCategory().toString());
+                    else {
+                        Ticket t = getTicket(f, subscriber);
+                        subscribers.get(flightCode).get(subscriber).cancelledFlight(flightCode, f.getDestinationCode(), t.getCategory().toString());
+                    }
                 } catch (RemoteException e) {
                     logger.error(e.getMessage());
 

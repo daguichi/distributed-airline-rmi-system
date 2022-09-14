@@ -9,7 +9,11 @@ public interface NotificationEventCallback extends Remote, Serializable {
 
     void confirmedFlight(String flightCode, String destinationCode, int row, char column, String category) throws RemoteException;
 
+    void confirmedFlight(String flightCode, String destinationCode, String category) throws RemoteException;
+
     void cancelledFlight(String flightCode, String destinationCode, int row, char column, String category) throws RemoteException;
+
+    void cancelledFlight(String flightCode, String destinationCode, String category) throws RemoteException;
 
     void assignedSeat(String flightCode, String destinationCode, int row, char column, String category) throws RemoteException;
 
