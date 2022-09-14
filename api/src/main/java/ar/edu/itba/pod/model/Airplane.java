@@ -1,10 +1,7 @@
 package ar.edu.itba.pod.model;
 
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Airplane implements Serializable {
 

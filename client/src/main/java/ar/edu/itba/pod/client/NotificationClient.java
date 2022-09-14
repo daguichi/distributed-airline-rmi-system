@@ -31,7 +31,7 @@ public class NotificationClient {
         try{
             registry = LocateRegistry.getRegistry(host, Integer.parseInt(port));
             flightNotificationService=(FlightNotificationService) registry.lookup("flight_notification");
-            final NotificationEventCallback notificationEventCallback = new NotificationEventCallbackImpl();;
+            final NotificationEventCallback notificationEventCallback = new NotificationEventCallbackImpl();
             UnicastRemoteObject.exportObject(notificationEventCallback, 0);
             flightNotificationService.registerPassenger(flightCode, passengerName, notificationEventCallback);
         } catch (Exception error) {
