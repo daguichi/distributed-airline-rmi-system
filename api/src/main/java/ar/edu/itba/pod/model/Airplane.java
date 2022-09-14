@@ -1,10 +1,7 @@
 package ar.edu.itba.pod.model;
 
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Airplane implements Serializable {
 
@@ -41,5 +38,18 @@ public class Airplane implements Serializable {
         return "Airplane{" +
                 "name='" + name + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Airplane airplane = (Airplane) o;
+        return Objects.equals(getName(), airplane.getName()) && Objects.equals(getSeats(), airplane.getSeats());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName(), getSeats());
     }
 }

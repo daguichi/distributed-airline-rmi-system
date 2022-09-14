@@ -3,6 +3,7 @@ package ar.edu.itba.pod.model;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Section implements Comparable<Section>, Serializable {
 
@@ -52,5 +53,18 @@ public class Section implements Comparable<Section>, Serializable {
 
     public Map<Integer, Map<Integer, Ticket>> getSeatMap() {
         return seatMap;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Section section = (Section) o;
+        return getRowCount() == section.getRowCount() && getColumnCount() == section.getColumnCount() && getCategory() == section.getCategory() && Objects.equals(getSeatMap(), section.getSeatMap());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCategory(), getRowCount(), getColumnCount(), getSeatMap());
     }
 }

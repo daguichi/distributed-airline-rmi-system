@@ -33,26 +33,35 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     private final Lock readLock = reentrantLock.readLock();
     private final Lock writeLock = reentrantLock.writeLock();
 
-
     public Servant() {
         this.subscribers = new HashMap<>();
+    }
+
+    public Map<String, Airplane> getAirplanes() {
+        return airplanes;
+    }
+
+    public Map<String, Flight> getFlights() {
+        return flights;
     }
 
     @Override
     public AirplaneWrapper addPlaneModel(String name, List<Section> sections) throws RemoteException {
         boolean valid = true;
-        if(name.isEmpty() || sections.isEmpty()) valid = false;
         for(Section s : sections) {
-            if (s.getColumnCount() <= 0 || s.getRowCount() <= 0)
-                valid = false;
+            if (s.getColumnCount() <= 0 || s.getRowCount() <= 0) {
+                return new AirplaneWrapper(name, sections, false);
+            }
         }
 
         writeLock.lock();
         try {
             if(airplanes.containsKey(name))
                 valid = false;
-            Airplane airplane = new Airplane(name, sections);
-            airplanes.put(name, airplane);
+            else {
+                Airplane airplane = new Airplane(name, sections);
+                airplanes.put(name, airplane);
+            }
         }
         finally {
             writeLock.unlock();
@@ -63,15 +72,18 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     @Override
     public FlightWrapper addFlight(String modelName, String flightCode, String destinationCode, List<Ticket> tickets) throws RemoteException {
         Airplane airplane = airplanes.get(modelName);
+        if(airplane == null)
+            return new FlightWrapper(modelName, flightCode, destinationCode, tickets, false);
+
         boolean valid = true;
-        if (airplane == null)
-            valid = false;
         writeLock.lock();
         try {
             if(flights.containsKey(flightCode))
                 valid = false;
-            Flight flight = new Flight(airplane, flightCode, destinationCode, tickets, FlightStatus.PENDING);
-            flights.put(flightCode, flight);
+            else {
+                Flight flight = new Flight(airplane, flightCode, destinationCode, tickets, FlightStatus.PENDING);
+                flights.put(flightCode, flight);
+            }
         }
         finally {
             writeLock.unlock();
@@ -99,7 +111,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         try {
             flight = getFlight(flightCode);
             if (flight.getStatus() != FlightStatus.PENDING) {
-                throw new NotPendingFlight(flightCode);
+                throw new NotPendingFlightException(flightCode);
             }
         }
         finally {
@@ -123,7 +135,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         try {
             flight = getFlight(flightCode);
             if (flight.getStatus() != FlightStatus.PENDING) {
-                throw new NotPendingFlight(flightCode);
+                throw new NotPendingFlightException(flightCode);
             }
         }
         finally {
