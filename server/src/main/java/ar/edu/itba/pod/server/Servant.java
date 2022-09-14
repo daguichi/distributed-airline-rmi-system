@@ -246,7 +246,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         Ticket ticket;
         readLock.lock();
         try {
-            flight = flights.get(flightCode);
+            flight = getFlight(flightCode);
             seat = getSeat(flight, row, column);
             ticket = getTicket(flight, passengerName);
         }
@@ -275,11 +275,10 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         Category oldCategory;
         readLock.lock();
         try {
-            flight = flights.get(flightCode);
+            flight = getFlight(flightCode);
             newSeat = getSeat(flight, row, column);
             ticket = getTicket(flight, passengerName);
             oldSeat = getPassengerSeat(flight, passengerName);
-
         }
         finally {
             readLock.unlock();
@@ -346,7 +345,6 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             oldTicket = getTicket(oldFlight,passengerName);
             alternativeFlights = getAlternativeFlightsList(oldFlight, passengerName);
             newFlight = alternativeFlights.stream().filter(flight -> flight.getFlightCode().equals(newFlightCode)).findFirst();
-
         }
         finally {
             readLock.unlock();

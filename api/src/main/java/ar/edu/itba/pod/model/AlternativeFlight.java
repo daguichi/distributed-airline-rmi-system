@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class AlternativeFlight implements Serializable {
 
@@ -32,4 +33,16 @@ public class AlternativeFlight implements Serializable {
         return availableSeats;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AlternativeFlight that = (AlternativeFlight) o;
+        return getAvailableSeats() == that.getAvailableSeats() && Objects.equals(getDestinationCode(), that.getDestinationCode()) && Objects.equals(getFlightCode(), that.getFlightCode()) && getCategory() == that.getCategory();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getDestinationCode(), getFlightCode(), getCategory(), getAvailableSeats());
+    }
 }
