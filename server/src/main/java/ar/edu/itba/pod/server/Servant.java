@@ -45,6 +45,10 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         return flights;
     }
 
+    public Map<String, Map<String, NotificationEventCallback>> getSubscribers() {
+        return subscribers;
+    }
+
     @Override
     public AirplaneWrapper addPlaneModel(String name, List<Section> sections) throws RemoteException {
         boolean valid = true;
@@ -366,7 +370,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         Flight flight;
         try {
             flight = getFlight(flightCode);
-            logger.info("Flight gotten " + flightCode);
+            logger.info("Flight gotten " + flightCode); //TODO ESTOS LOGGER VUELAN?
         }
         finally {
             readLock.unlock();
