@@ -57,7 +57,7 @@ public class FlightNotificationServiceTest {
     }
 
     @Test
-    public void registerPassengerConfirmedFlight() throws RemoteException {
+    public void registerPassengerConfirmedFlight() throws RemoteException, InterruptedException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.confirmFlight(flightCode);
