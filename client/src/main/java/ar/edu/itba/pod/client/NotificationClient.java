@@ -34,6 +34,7 @@ public class NotificationClient {
             flightNotificationService.registerPassenger(flightCode, passengerName, notificationEventCallback);
         } catch (Exception error) {
             logger.error(error.getMessage());
+            System.exit(0);
         }
     }
 }

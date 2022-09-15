@@ -278,7 +278,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             flight.getLock().readLock().unlock();
         }
 
-        notifySuccessfulRegistration(flightCode, passengerName);
+        notifySuccessfulRegistration(flightCode, callback);
     }
 
     @Override
@@ -518,15 +518,13 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
     }
 
-    private void notifySuccessfulRegistration(String flightCode, String passengerName) {
-        List<NotificationEventCallback> toNotify = airport.getCallbacks(flightCode,passengerName);
-        toNotify.forEach(t -> {
-            try {
-                t.successfulRegistration(flightCode, airport.getFlight(flightCode).getDestinationCode());
-            } catch (RemoteException e) {
-                logger.error(e.getMessage());
-            }
-        });
+    private void notifySuccessfulRegistration(String flightCode, NotificationEventCallback callback) {
+        if(callback == null) return;
+        try {
+            callback.successfulRegistration(flightCode, airport.getFlight(flightCode).getDestinationCode());
+        } catch (RemoteException e) {
+            logger.error(e.getMessage());
+        }
     }
 
     //Testing

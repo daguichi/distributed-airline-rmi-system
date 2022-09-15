@@ -9,6 +9,10 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationEventCallback.class);
 
+    private static void run() {
+        System.exit(0);
+    }
+
     @Override
     public void successfulRegistration(String flightCode, String destinationCode ) throws RemoteException {
         logger.info("You are following Flight "+ flightCode +" with destination " + destinationCode + ".");
@@ -56,6 +60,7 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
 
     @Override
     public void unsubscribe() throws RemoteException {
-            System.exit(0);
+         Thread exitThread = new Thread(NotificationEventCallbackImpl::run);
+         exitThread.start();
     }
 }

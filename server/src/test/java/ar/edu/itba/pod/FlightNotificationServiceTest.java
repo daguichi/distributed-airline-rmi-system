@@ -9,7 +9,6 @@ import ar.edu.itba.pod.model.Ticket;
 import ar.edu.itba.pod.server.Servant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.List;
