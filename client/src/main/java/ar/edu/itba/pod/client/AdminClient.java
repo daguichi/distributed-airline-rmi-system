@@ -31,7 +31,7 @@ public class AdminClient {
         try {
             serverAddress = Optional.ofNullable(System.getProperty("serverAddress")).orElseThrow(IllegalArgumentException::new);
         } catch (IllegalArgumentException exc) {
-            System.out.println("Error: You must provide the server address");
+            logger.error("You must provide the server address");
             return;
         }
 
@@ -40,13 +40,13 @@ public class AdminClient {
             host = address[0];
             port = address[1];
         } catch (StringIndexOutOfBoundsException ex) {
-            System.out.println("Error: you must provide a port");
+            logger.error("You must provide a port");
             return;
         }
         try {
             action = Optional.ofNullable(System.getProperty("action")).orElseThrow(IllegalArgumentException::new);
         } catch (IllegalArgumentException exc) {
-            System.out.println("Error: You must provide an action");
+            logger.error("You must provide an action");
             return;
         }
 
@@ -83,7 +83,6 @@ public class AdminClient {
                     break;
                 case "flights":
                     int added = 0;
-                    List<FlightWrapper> flights = new ArrayList<>();
                     for (FlightWrapper flight : parseFlights(inPath)) {
                         try {
                             service.addFlight(flight.getModelName(), flight.getFlightCode(), flight.getDestinationCode(), flight.getTickets());
@@ -124,7 +123,6 @@ public class AdminClient {
     }
 
     private static List<AirplaneWrapper> parseAirplanes(String inPath) {
-        int added = 0;
         List<AirplaneWrapper> ret = new ArrayList<>();
         Path path = Paths.get(inPath);
 
@@ -145,7 +143,6 @@ public class AdminClient {
                     sectionList.add(section);
                 }
                 ret.add(new AirplaneWrapper(modelName, sectionList));
-                added++;
             }
 
         } catch (IOException e) {
@@ -158,7 +155,6 @@ public class AdminClient {
     private static List<FlightWrapper> parseFlights(String inPath) {
         List<FlightWrapper> ret = new ArrayList<>();
         Path path = Paths.get(inPath);
-        int added = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(path.toFile()))) {
             String line;
             br.readLine();
@@ -178,7 +174,6 @@ public class AdminClient {
                 }
                 FlightWrapper flight = new FlightWrapper(modelName, flightCode, destinationCode, tickets);
                 ret.add(flight);
-                added++;
             }
 
         } catch (IOException e) {

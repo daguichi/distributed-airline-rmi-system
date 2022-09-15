@@ -2,48 +2,29 @@
 
 Trabajo Práctico 1 para Programación de Objetos Distribuidos. ITBA 2Q 2022.
 
-
-
 ## Instalación
 
-Ejecutar el siguiente comando de maven luego de clonar el proyecto
+Clonar el proyecto y ejecutar el siguiente comando:
 
 ```bash
 mvn clean install
 ```
-
-Luego, en los directorios server/target y client/target se encuentran archvos .tar.gz que deben ser descomprimidos. Las carpetas obtenidas contienen los scripts para ejecutar las distintas partes del proyecto.
+En los directorios server/target y client/target están los archivos de extensión .tar.gz que deben ser descomprimidos. 
+Comandos para descomprimir:
 
 ```bash
 tar -xzvf server/target/tpe1-g9-server-1.0-SNAPSHOT-bin.tar.gz
 tar -xzvf client/target/tpe1-g9-client-1.0-SNAPSHOT-bin.tar.gz
 ```
 
-
 ## Uso
 
-Otorgar permisos a los scripts obtenidos al descomprimir el .tar.gz en el server, realizado en el paso anterior.
+Otorgar permisos de ejecución a los scripts obtenidos al descomprimir los .tar.gz.
 
 ```bash
 cd tpe1-g9-server-1.0-SNAPSHOT
 chmod u+x ./run-registry.sh
 chmod u+x ./run-server.sh
-```
-
-Luego encender el Rmi Registry ejecutando el script run-registry.sh. El puerto por default es 1099.
-
-```bash
-./run-registry.sh [PORT]
-```
-Luego, encender el server, mediante el otro script de esta misma carpeta carpeta. El puerto por default es 1099.
-
-```bash
-./run-server.sh [PORT]
-```
-
-Para ejecutar los clientes debemos acceder al directorio generado al descomprimir su archivo al inicio y asignar los permisos pertinentes.
-
-```bash
 cd ../tpe1-g9-client-1.0-SNAPSHOT
 chmod u+x run-admin.sh
 chmod u+x run-client.sh
@@ -51,7 +32,22 @@ chmod u+x run-notification.sh
 chmod u+x run-seatAssign.sh
 chmod u+x run-seatMap.sh
 ```
-Luego los clientes disponibles junto a su modo de uso son los siguientes:
+
+Para realizar todos los pasos anteriores puede utilizar el script build.sh
+
+Para encender el RMI Registry ejecutar el script run-registry.sh. El puerto por default es 1099 pero puede indicar otro.
+
+```bash
+./run-registry.sh [PORT]
+```
+
+Luego encender el server mediante con el script run-server.sh. El puerto por default es 1099.
+
+```bash
+./run-server.sh [PORT]
+```
+
+Luego puede ejecutar los clientes de las siguientes formas:
 
 ## run-admin
 ```bash
@@ -116,5 +112,3 @@ donde:
 - Si no se indica -Dflight la consulta falla
 - Si se indican ambos -Dcategory y -Drow la consulta falla
 - output.csv es el path del archivo de salida con los resultados de la consulta elegida
-
-

@@ -5,8 +5,6 @@ import ar.edu.itba.pod.model.Seat;
 import ar.edu.itba.pod.service.SeatAdministrationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.List;
@@ -15,7 +13,7 @@ import java.util.Optional;
 public class SeatAssignClient {
     private static final Logger logger = LoggerFactory.getLogger(SeatAssignClient.class);
 
-    public static void main(String[] args) throws RemoteException {
+    public static void main(String[] args) {
         logger.info("Seat Assign Client starting...\n");
         //Non nullable params
         String actionName = Optional.ofNullable(System.getProperty("action")).orElseThrow(IllegalArgumentException::new);
@@ -59,7 +57,7 @@ public class SeatAssignClient {
                             sb.append("ASSIGNED to ").append(seat.getTicket().get().getPassengerName());
                         }
                         sb.append(".");
-                        System.out.println(sb);
+                        logger.info(sb.toString());
                         break;
                     case "assign":
                         passengerName = System.getProperty("passenger");
@@ -74,7 +72,7 @@ public class SeatAssignClient {
                 String passengerName = System.getProperty("passenger");
                 List<AlternativeFlight> alts = seatAdministrationService.getAlternativeFlights(flightCode, passengerName);
                 for (AlternativeFlight alt : alts) {
-                    System.out.println(alt.getDestinationCode() + " | " + alt.getFlightCode() +
+                    logger.info(alt.getDestinationCode() + " | " + alt.getFlightCode() +
                             " | " + alt.getAvailableSeats() + " " + alt.getCategory());
                 }
             } else if ("changeTicket".equals(actionName)) {
