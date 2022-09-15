@@ -65,7 +65,6 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
         catch (Exception e) { logger.error(e.getMessage()); }
 
-//        TODO: Ver donde ponemos este remove, deberia estar despues del submit del executor subscribers.remove(flightCode);
         return FlightStatus.CONFIRMED;
     }
 

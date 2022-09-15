@@ -29,3 +29,9 @@ tpe1-g9-client-1.0-SNAPSHOT/
 
 target/
 
+
+*.csv
+
+server/pom.xml
+
+.idea/
