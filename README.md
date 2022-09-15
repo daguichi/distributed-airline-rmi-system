@@ -11,6 +11,7 @@ Ejecutar el siguiente comando de maven luego de clonar el proyecto
 ```bash
 mvn clean install
 ```
+
 Luego, en los directorios server/target y client/target se encuentran archvos .tar.gz que deben ser descomprimidos. Las carpetas obtenidas contienen los scripts para ejecutar las distintas partes del proyecto.
 
 TODO: REVISAR 
@@ -55,6 +56,7 @@ chmod 777 run-seatMap.sh
 ```
 Luego los clientes disponibles junto a su modo de uso son los siguientes:
 
+## run-admin
 ```bash
  ./run-admin.sh -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName
 [ -DinPath=filename | -Dflight=flightCode ]
@@ -71,6 +73,8 @@ administración de vuelos.
     - cancel: Cancela el vuelo de código flightCode. Deberá imprimir en pantalla el estado del vuelo luego de invocar a la acción o el error correspondiente
     - reticketing: Fuerza el cambio de tickets de vuelos cancelados por tickets de vuelos alternativos
 
+
+## run-seatAssign
 
 ```bash
  ./run-seatAssign -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName
@@ -90,7 +94,10 @@ donde:
         - La cantidad de asientos asignables de la categoría
         - La categoría de los asientos asignables
     - changeTicket: Cambia el ticket del pasajero name de un vuelo de código originFlightCode a otro vuelo alternativo de código flightCode
+  
+##run-notifcations
 ```bash
+
  ./run-notifcations -DserverAddress=xx.xx.xx.xx:yyyy -Dflight=flightCode -Dpassenger=name
 
 ```
@@ -100,6 +107,7 @@ notificaciones del vuelo
 - flightCode: el código del vuelo
 - name: el nombre del pasajero
 
+##run-seatMap
 ```bash
 ./run-seatMap -DserverAddress=xx.xx.xx.xx:yyyy -Dflight=flightCode [-Dcategory=catName | -Drow=rowNumber ] -DoutPath=output.csv
 ```
