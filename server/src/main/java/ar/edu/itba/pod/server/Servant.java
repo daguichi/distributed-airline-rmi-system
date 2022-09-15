@@ -14,6 +14,7 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -32,7 +33,6 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     private final ReentrantReadWriteLock reentrantLock = new ReentrantReadWriteLock(true);
     private final Lock readLock = reentrantLock.readLock();
     private final Lock writeLock = reentrantLock.writeLock();
-
     public Servant() {
         this.subscribers = new HashMap<>();
     }
@@ -334,7 +334,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     @Override
-    public void changeFlight(String oldFlightCode, String newFlightCode, String passengerName) throws RemoteException {
+    public void changeFlight(String oldFlightCode, String newFlightCode, String passengerName) throws RemoteException, InterruptedException {
         Flight oldFlight;
         Ticket oldTicket;
         List<Flight> alternativeFlights;
@@ -360,11 +360,11 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
             writeLock.unlock();
         }
         notifyTicketChanged(passengerName,oldFlightCode, newFlightCode);
+        executor.awaitTermination(1, TimeUnit.SECONDS);
         Map<String, List<NotificationEventCallback>> oldFlightCodeSubs = subscribers.get(oldFlightCode);
         subscribers.remove(oldFlightCode);
         subscribers.put(newFlightCode, oldFlightCodeSubs);
     }
-
     @Override
     public void registerPassenger(String flightCode, String passengerName, NotificationEventCallback callback) throws RemoteException {
         readLock.lock();
