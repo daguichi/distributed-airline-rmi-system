@@ -3,7 +3,6 @@ package ar.edu.itba.pod.client;
 import ar.edu.itba.pod.callbacks.NotificationEventCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.rmi.RemoteException;
 
 public class NotificationEventCallbackImpl implements NotificationEventCallback {

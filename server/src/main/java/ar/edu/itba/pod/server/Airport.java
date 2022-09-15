@@ -12,7 +12,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 public class Airport {
-    private static Airport instance = null;
 
     private final Map<String, Airplane> airplanes = new HashMap<>();
     private final Map<String, Flight> flights = new HashMap<>();
