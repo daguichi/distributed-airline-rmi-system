@@ -27,8 +27,7 @@ chmod u+x ./run-registry.sh
 chmod u+x ./run-server.sh
 cd ../tpe1-g9-client-1.0-SNAPSHOT
 chmod u+x run-admin.sh
-chmod u+x run-client.sh
-chmod u+x run-notification.sh
+chmod u+x run-notifications.sh
 chmod u+x run-seatAssign.sh
 chmod u+x run-seatMap.sh
 ```
@@ -36,6 +35,8 @@ chmod u+x run-seatMap.sh
 Para realizar todos los pasos anteriores puede utilizar el script build.sh
 
 Para encender el RMI Registry ejecutar el script run-registry.sh. El puerto por default es 1099 pero puede indicar otro.
+
+Entrar a la carpeta tpe1-g9-server-1.0-SNAPSHOT
 
 ```bash
 ./run-registry.sh [PORT]
