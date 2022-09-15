@@ -2,16 +2,16 @@ package ar.edu.itba.pod.model;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Flight  implements Serializable {
 
-    private Airplane airplane;
-    private String flightCode;
-    private String destinationCode;
-    private List<Ticket> tickets;
+    private final Airplane airplane;
+    private final String flightCode;
+    private final String destinationCode;
+    private final List<Ticket> tickets;
     private FlightStatus status;
+    private ReentrantReadWriteLock lock;
 
     public Flight(Airplane airplane, String flightCode, String destinationCode, List<Ticket> tickets, FlightStatus status) {
         this.airplane = airplane;
@@ -19,6 +19,7 @@ public class Flight  implements Serializable {
         this.destinationCode = destinationCode;
         this.tickets = tickets;
         this.status = status;
+        this.lock =  new ReentrantReadWriteLock(true);
     }
 
     public FlightStatus getStatus() {
@@ -47,5 +48,9 @@ public class Flight  implements Serializable {
 
     public long availableSeats() {
         return airplane.getSeats().values().stream().flatMap(row -> row.values().stream()).filter(Seat::isAvailable).count();
+    }
+
+    public ReentrantReadWriteLock getLock() {
+        return lock;
     }
 }
