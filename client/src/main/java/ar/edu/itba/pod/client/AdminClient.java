@@ -1,5 +1,9 @@
 package ar.edu.itba.pod.client;
 
+import ar.edu.itba.pod.exceptions.AirplaneAlreadyExistsException;
+import ar.edu.itba.pod.exceptions.FlightAlreadyExistsException;
+import ar.edu.itba.pod.exceptions.InvalidSectionException;
+import ar.edu.itba.pod.exceptions.NoSuchAirplaneException;
 import ar.edu.itba.pod.model.*;
 import ar.edu.itba.pod.service.FlightAdministrationService;
 import org.slf4j.Logger;
@@ -56,21 +60,38 @@ public class AdminClient {
             String inPath = parseParameter(args, "-DinPath");
             switch (action) {
                 case "models":
-                    List<AirplaneWrapper> airplanes = new ArrayList<>();
+                    int counter = 0;
                     for (AirplaneWrapper airplane : parseAirplanes(inPath)) {
-                        airplanes.add(service.addPlaneModel(airplane.getModelName(), airplane.getSections()));
+                        try {
+                            service.addPlaneModel(airplane.getModelName(), airplane.getSections());
+                        }
+                        catch (InvalidSectionException | AirplaneAlreadyExistsException | RemoteException exception ) {
+                            if(exception instanceof InvalidSectionException || exception instanceof  AirplaneAlreadyExistsException) {
+                                logger.error("Cannot add model " + airplane.getModelName()+ ".");
+                            } else
+                                logger.error(exception.getMessage());
+                            continue;
+                        }
+                        counter++;
                     }
-                    airplanes.stream().filter(airplane -> !airplane.isValid()).forEach(airplane -> logger.error("Cannot add model " + airplane.getModelName()+ "."));
-                    long added = airplanes.stream().filter(AirplaneWrapper::isValid).count();
-                    logger.info(added + " models added.");
+                    logger.info(counter + " models added.");
                     break;
                 case "flights":
+                    int added = 0;
                     List<FlightWrapper> flights = new ArrayList<>();
                     for (FlightWrapper flight : parseFlights(inPath)) {
-                        flights.add(service.addFlight(flight.getModelName(), flight.getFlightCode(), flight.getDestinationCode(), flight.getTickets()));
+                        try {
+                            service.addFlight(flight.getModelName(), flight.getFlightCode(), flight.getDestinationCode(), flight.getTickets());
+                        }
+                        catch (NoSuchAirplaneException | FlightAlreadyExistsException | RemoteException exception) {
+                            if(exception instanceof NoSuchAirplaneException || exception instanceof  FlightAlreadyExistsException) {
+                                logger.error("Cannot add flight " + flight.getFlightCode() + ".");
+                            } else
+                                logger.error(exception.getMessage());
+                            continue;
+                        }
+                        added++;
                     }
-                    flights.stream().filter(flight -> !flight.isValid()).forEach(flight -> logger.error("Cannot add flight " + flight.getFlightCode() + "."));
-                    added = flights.stream().filter(FlightWrapper::isValid).count();
                     logger.info(added + " flights added.");
                     break;
             }
@@ -126,7 +147,7 @@ public class AdminClient {
                     Section section = new Section(category, rows, columns);
                     sectionList.add(section);
                 }
-                ret.add(new AirplaneWrapper(modelName, sectionList, false));
+                ret.add(new AirplaneWrapper(modelName, sectionList));
                 added++;
             }
 
@@ -158,7 +179,7 @@ public class AdminClient {
                     Ticket ticket = new Ticket(passengerName, category);
                     tickets.add(ticket);
                 }
-                FlightWrapper flight = new FlightWrapper(modelName, flightCode, destinationCode, tickets, false);
+                FlightWrapper flight = new FlightWrapper(modelName, flightCode, destinationCode, tickets);
                 ret.add(flight);
                 added++;
             }
