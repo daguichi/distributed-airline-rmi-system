@@ -34,7 +34,7 @@ public class FlightNotificationServiceTest {
     private final List<Ticket> tickets = Arrays.asList(ticket, ticket2);
 
 
-    @Test //TODO NASO MIRA ESTE TEST A VER SI ESTA BIEN O FALTA ALGO
+    @Test
     public void registerPassenger() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);

@@ -293,19 +293,6 @@ public class SeatAdministrationServiceTest {
                 "Should have thrown InvalidAlternativeFlightException");
     }
 
-    //TODO CASO BORDE, QUE PASA SI QUIERO CAMBIAR MI TICKET ECONOMY A UN AVION QUE SOLO TIENE BUSINESS
-//    @Test
-//    public void changeFlightNoAvailableSeat() throws RemoteException {
-//        servant.addPlaneModel(planeName, sectionList);
-//        servant.addPlaneModel(planeName2, Collections.singletonList(business));
-//        servant.addFlight(planeName, flightCode, destinationCode, tickets);
-//        servant.addFlight(planeName2, flightCode2, destinationCode, new ArrayList<>());
-//
-//        Assertions.assertThrows(InvalidAlternativeFlightException.class,
-//                () -> servant.changeFlight(flightCode, flightCode2, passengerName2),
-//                "Should have thrown InvalidAlternativeFlightException");
-//    }
-
     @Test
     public void changeFlightsNoTicket() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);

@@ -181,7 +181,6 @@ public class FlightAdministrationServiceTest {
         }
     }
 
-    //TODO no esta andando orden alfabetico
     @Test
     public void reprogramFlightsTicketsNotEnoughRoom() throws  RemoteException {
         List<Ticket> ticketsList = new ArrayList<>();

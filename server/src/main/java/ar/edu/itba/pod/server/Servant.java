@@ -119,7 +119,6 @@ public class Servant implements FlightAdministrationService,
 
     }
 
-    //TODO ver si se puede mejorar
     private void processTicket(Ticket ticket, List<Flight> possibleFlights, Flight oldFlight, ReticketWrapper rw) {
         Flight newFlight = null;
         int category = ticket.getCategory().ordinal();
