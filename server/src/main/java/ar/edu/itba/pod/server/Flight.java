@@ -1,4 +1,8 @@
-package ar.edu.itba.pod.model;
+package ar.edu.itba.pod.server;
+
+import ar.edu.itba.pod.model.FlightStatus;
+import ar.edu.itba.pod.model.Seat;
+import ar.edu.itba.pod.model.Ticket;
 
 import java.io.Serializable;
 import java.util.List;

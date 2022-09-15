@@ -1,5 +1,6 @@
 package ar.edu.itba.pod;
 
+import ar.edu.itba.pod.callbacks.NotificationEventCallback;
 import ar.edu.itba.pod.exceptions.FlightAlreadyConfirmedException;
 import ar.edu.itba.pod.exceptions.NoSuchFlightException;
 import ar.edu.itba.pod.model.Category;
@@ -32,14 +33,59 @@ public class FlightNotificationServiceTest {
     private final Ticket ticket = new Ticket(passengerName1, Category.BUSINESS);
     private final Ticket ticket2 = new Ticket(passengerName2, Category.ECONOMY);
     private final List<Ticket> tickets = Arrays.asList(ticket, ticket2);
+    private final NotificationEventCallback callback = new NotificationEventCallback() {
+        @Override
+        public void successfulRegistration(String flightCode, String destinationCode) throws RemoteException {
 
+        }
+
+        @Override
+        public void confirmedFlight(String flightCode, String destinationCode, int row, char column, String category) throws RemoteException {
+
+        }
+
+        @Override
+        public void confirmedFlight(String flightCode, String destinationCode, String category) throws RemoteException {
+
+        }
+
+        @Override
+        public void cancelledFlight(String flightCode, String destinationCode, int row, char column, String category) throws RemoteException {
+
+        }
+
+        @Override
+        public void cancelledFlight(String flightCode, String destinationCode, String category) throws RemoteException {
+
+        }
+
+        @Override
+        public void assignedSeat(String flightCode, String destinationCode, int row, char column, String category) throws RemoteException {
+
+        }
+
+        @Override
+        public void movedSeat(String flightCode, String destinationCode, String category, int row, char column, String oldCategory, int oldRow, char oldColumn) throws RemoteException {
+
+        }
+
+        @Override
+        public void changedTicket(String flightCode, String destinationCode, String newFlightCode) throws RemoteException {
+
+        }
+
+        @Override
+        public void unsubscribe() throws RemoteException {
+
+        }
+    };
 
     @Test
     public void registerPassenger() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
 
-        servant.registerPassenger(flightCode, passengerName1, null);
+        servant.registerPassenger(flightCode, passengerName1, callback);
 
         Assertions.assertTrue(servant.getAirport().getSubscribers().containsKey(flightCode));
         Assertions.assertTrue(servant.getAirport().getSubscribers().get(flightCode).containsKey(passengerName1));
@@ -49,21 +95,21 @@ public class FlightNotificationServiceTest {
     }
 
     @Test
-    public void registerPassengerInvalidFlight() throws RemoteException {
+    public void registerPassengerInvalidFlight()  {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
-                () -> servant.registerPassenger(flightCode, passengerName1, null),
+                () -> servant.registerPassenger(flightCode, passengerName1, callback),
                 "Should have thrown NoSuchFlightException");
         Assertions.assertTrue(exception.getMessage().contains(flightCode));
     }
 
     @Test
-    public void registerPassengerConfirmedFlight() throws RemoteException, InterruptedException {
+    public void registerPassengerConfirmedFlight() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.confirmFlight(flightCode);
 
         FlightAlreadyConfirmedException exception = Assertions.assertThrows(FlightAlreadyConfirmedException.class,
-                () -> servant.registerPassenger(flightCode, passengerName1, null),
+                () -> servant.registerPassenger(flightCode, passengerName1, callback),
                 "Should have thrown FlightAlreadyConfirmedException");
         Assertions.assertTrue(exception.getMessage().contains(flightCode));
     }

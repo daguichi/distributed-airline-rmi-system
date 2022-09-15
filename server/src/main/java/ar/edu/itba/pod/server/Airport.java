@@ -104,6 +104,7 @@ public class Airport {
     }
 
     public void addSubscriber(String flightCode, String passengerName, NotificationEventCallback callback) {
+        if(callback == null) return;
         subscribersLock.writeLock().lock();
         try {
             subscribers.putIfAbsent(flightCode, new HashMap<>());

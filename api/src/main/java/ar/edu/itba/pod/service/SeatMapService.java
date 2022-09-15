@@ -2,8 +2,6 @@ package ar.edu.itba.pod.service;
 
 import ar.edu.itba.pod.model.Category;
 import ar.edu.itba.pod.model.Row;
-import ar.edu.itba.pod.model.Seat;
-
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;

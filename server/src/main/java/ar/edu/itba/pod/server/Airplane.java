@@ -1,4 +1,7 @@
-package ar.edu.itba.pod.model;
+package ar.edu.itba.pod.server;
+
+import ar.edu.itba.pod.model.Seat;
+import ar.edu.itba.pod.model.Section;
 
 import java.io.Serializable;
 import java.util.*;
@@ -6,7 +9,7 @@ import java.util.*;
 public class Airplane implements Serializable {
 
     private final String name;
-    private Map<Integer, Map<Integer,Seat>> seats;
+    private Map<Integer, Map<Integer, Seat>> seats;
 
     public Airplane(String name, List<Section> sections) {
         this.name = name;
