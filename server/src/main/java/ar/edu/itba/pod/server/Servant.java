@@ -13,10 +13,9 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-
-public class Servant implements FlightAdministrationService,
-        FlightNotificationService, SeatAdministrationService, SeatMapService {
+public class Servant implements FlightAdministrationService, FlightNotificationService, SeatAdministrationService, SeatMapService {
 
     private final static Logger logger = LoggerFactory.getLogger(Servant.class);
     private final Airport airport = new Airport();
@@ -58,9 +57,11 @@ public class Servant implements FlightAdministrationService,
     }
 
     @Override
-    public FlightStatus confirmFlight(String flightCode) throws RemoteException {
+    public FlightStatus confirmFlight(String flightCode) throws RemoteException, InterruptedException {
         changeFlightStatus(flightCode, FlightStatus.CONFIRMED);
         notifyFlightConfirmed(flightCode);
+        executor.awaitTermination(1, TimeUnit.SECONDS);
+
 //        TODO: Ver donde ponemos este remove, deberia estar despues del submit del executor subscribers.remove(flightCode);
         return FlightStatus.CONFIRMED;
     }
@@ -232,7 +233,7 @@ public class Servant implements FlightAdministrationService,
     }
 
     @Override
-    public void changeFlight(String oldFlightCode, String newFlightCode, String passengerName) throws RemoteException {
+    public void changeFlight(String oldFlightCode, String newFlightCode, String passengerName) throws RemoteException, InterruptedException {
         Flight oldFlight = airport.getFlight(oldFlightCode);
         Ticket oldTicket = getTicket(oldFlight,passengerName);
         List<Flight> alternativeFlights = airport.getAlternativeFlights(
@@ -255,8 +256,11 @@ public class Servant implements FlightAdministrationService,
         }
 
         notifyTicketChanged(passengerName,oldFlightCode, newFlightCode);
+        executor.awaitTermination(1, TimeUnit.SECONDS);
+        Map<String, List<NotificationEventCallback>> oldFlightCodeSubs = airport.getSubscribers().get(oldFlightCode);
+        airport.getSubscribers().remove(oldFlightCode);
+        airport.getSubscribers().put(newFlightCode, oldFlightCodeSubs);
     }
-
     @Override
     public void registerPassenger(String flightCode, String passengerName,
                                   NotificationEventCallback callback) throws RemoteException {

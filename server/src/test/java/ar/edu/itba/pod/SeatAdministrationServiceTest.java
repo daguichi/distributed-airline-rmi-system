@@ -133,7 +133,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void assignSeatNotPendingFlight() throws RemoteException {
+    public void assignSeatNotPendingFlight() throws RemoteException, InterruptedException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.confirmFlight(flightCode);
@@ -208,7 +208,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void changeSeatNotPendingFlight() throws RemoteException {
+    public void changeSeatNotPendingFlight() throws RemoteException, InterruptedException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.assignSeat(flightCode, passengerName1, 1, 'A');
@@ -257,7 +257,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void changeFlight() throws RemoteException {
+    public void changeFlight() throws RemoteException, InterruptedException {
         List<Ticket> ticketsList = new ArrayList<>();
         ticketsList.add(ticket);
         ticketsList.add(ticket2);

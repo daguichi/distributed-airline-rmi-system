@@ -118,7 +118,7 @@ public class FlightAdministrationServiceTest {
     }
 
     @Test
-    public void confirmFlight() throws RemoteException {
+    public void confirmFlight() throws RemoteException, InterruptedException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.confirmFlight(flightCode);
