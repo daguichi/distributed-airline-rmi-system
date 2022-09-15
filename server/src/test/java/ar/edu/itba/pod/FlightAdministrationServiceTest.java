@@ -53,7 +53,7 @@ public class FlightAdministrationServiceTest {
     }
 
     @Test
-    public void addInvalidSectionAirplane() throws RemoteException {
+    public void addInvalidSectionAirplane() {
         Assertions.assertThrows(InvalidSectionException.class,
                 () -> servant.addPlaneModel(planeName, Collections.singletonList(invalidSection)),
                 "Should have thrown InvalidSectionException");
@@ -67,7 +67,7 @@ public class FlightAdministrationServiceTest {
     }
 
     @Test
-    public void addInvalidAirplaneFlight() throws RemoteException {
+    public void addInvalidAirplaneFlight() {
         Assertions.assertThrows(NoSuchAirplaneException.class,
                 () -> servant.addFlight(planeName, flightCode, destinationCode, tickets),
                 "Should have thrown NoSuchAirplaneException");
@@ -90,7 +90,7 @@ public class FlightAdministrationServiceTest {
     }
 
     @Test
-    public void getFlightStatusInvalidFlight() throws RemoteException {
+    public void getFlightStatusInvalidFlight() {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
                 () -> servant.getFlightStatus(flightCode),
                 "Should have thrown NoSuchFlightException");
@@ -118,7 +118,7 @@ public class FlightAdministrationServiceTest {
     }
 
     @Test
-    public void confirmFlight() throws RemoteException, InterruptedException {
+    public void confirmFlight() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.confirmFlight(flightCode);

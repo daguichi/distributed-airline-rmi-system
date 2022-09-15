@@ -57,10 +57,13 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     @Override
-    public FlightStatus confirmFlight(String flightCode) throws RemoteException, InterruptedException {
+    public FlightStatus confirmFlight(String flightCode) throws RemoteException {
         changeFlightStatus(flightCode, FlightStatus.CONFIRMED);
         notifyFlightConfirmed(flightCode);
-        executor.awaitTermination(1, TimeUnit.SECONDS);
+        try {
+            executor.awaitTermination(1, TimeUnit.SECONDS);
+        }
+        catch (Exception e) { logger.error(e.getMessage()); }
 
 //        TODO: Ver donde ponemos este remove, deberia estar despues del submit del executor subscribers.remove(flightCode);
         return FlightStatus.CONFIRMED;
@@ -233,7 +236,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     }
 
     @Override
-    public void changeFlight(String oldFlightCode, String newFlightCode, String passengerName) throws RemoteException, InterruptedException {
+    public void changeFlight(String oldFlightCode, String newFlightCode, String passengerName) throws RemoteException {
         Flight oldFlight = airport.getFlight(oldFlightCode);
         Ticket oldTicket = getTicket(oldFlight,passengerName);
         List<Flight> alternativeFlights = airport.getAlternativeFlights(
@@ -256,7 +259,12 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         }
 
         notifyTicketChanged(passengerName,oldFlightCode, newFlightCode);
-        executor.awaitTermination(1, TimeUnit.SECONDS);
+        try {
+            executor.awaitTermination(1, TimeUnit.SECONDS);
+        }
+        catch (Exception e) {
+            logger.error(e.getMessage());
+        }
         Map<String, List<NotificationEventCallback>> oldFlightCodeSubs = airport.getSubscribers().get(oldFlightCode);
         airport.getSubscribers().remove(oldFlightCode);
         airport.getSubscribers().put(newFlightCode, oldFlightCodeSubs);

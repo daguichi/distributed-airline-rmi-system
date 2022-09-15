@@ -19,45 +19,50 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 public class AdminClient {
 
     private final static Logger logger= LoggerFactory.getLogger(AdminClient.class);
 
     public static void main(String[] args) throws RemoteException, NotBoundException {
-        String serverAddress, serverPort;
+        String serverAddress, port, host, action;
 
         try {
-            serverAddress = parseParameter(args,"-DserverAddress");
+            serverAddress = Optional.ofNullable(System.getProperty("serverAddress")).orElseThrow(IllegalArgumentException::new);
         } catch (IllegalArgumentException exc) {
             System.out.println("Error: You must provide the server address");
             return;
         }
 
         try {
-            serverPort = serverAddress.substring(serverAddress.indexOf(':')+1);
-            serverAddress = serverAddress.substring(0,serverAddress.indexOf(':'));
+            String[] address = serverAddress.split(":");
+            host = address[0];
+            port = address[1];
         } catch (StringIndexOutOfBoundsException ex) {
             System.out.println("Error: you must provide a port");
             return;
         }
+        try {
+            action = Optional.ofNullable(System.getProperty("action")).orElseThrow(IllegalArgumentException::new);
+        } catch (IllegalArgumentException exc) {
+            System.out.println("Error: You must provide an action");
+            return;
+        }
 
-        String action = parseParameter(args,"-Daction");
-
-        final Registry registry = LocateRegistry.getRegistry(serverAddress, Integer.parseInt(serverPort));
+        final Registry registry = LocateRegistry.getRegistry(host, Integer.parseInt(port));
         final FlightAdministrationService service = (FlightAdministrationService) registry.lookup("flight_administration");
 
         try {
-            execAction(args, action, service);
+            execAction(action, service);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }
 
-    private static void execAction(String[] args, String action, FlightAdministrationService service) throws RemoteException {
+    private static void execAction(String action, FlightAdministrationService service) throws RemoteException, InterruptedException {
         if ("models".equals(action) || "flights".equals(action)) {
-            String inPath = parseParameter(args, "-DinPath");
+            String inPath = System.getProperty("inPath");
             switch (action) {
                 case "models":
                     int counter = 0;
@@ -78,7 +83,6 @@ public class AdminClient {
                     break;
                 case "flights":
                     int added = 0;
-                    List<FlightWrapper> flights = new ArrayList<>();
                     for (FlightWrapper flight : parseFlights(inPath)) {
                         try {
                             service.addFlight(flight.getModelName(), flight.getFlightCode(), flight.getDestinationCode(), flight.getTickets());
@@ -96,7 +100,7 @@ public class AdminClient {
                     break;
             }
         } else if ("status".equals(action) || "confirm".equals(action) || "cancel".equals(action)) {
-            String flightCode = parseParameter(args, "-Dflight");
+            String flightCode = System.getProperty( "flight");
             FlightStatus ret;
             switch (action) {
                 case "status":
@@ -118,16 +122,7 @@ public class AdminClient {
         }
     }
 
-    private static String parseParameter(String[] args, String parameter) {
-        return Stream.of(args).filter(arg -> arg.contains(parameter))
-                .map(arg -> arg.substring(arg.indexOf("=")+ 1))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException(
-                        "Must provide " + parameter + "=<value> param")
-                );
-    }
-
     private static List<AirplaneWrapper> parseAirplanes(String inPath) {
-        int added = 0;
         List<AirplaneWrapper> ret = new ArrayList<>();
         Path path = Paths.get(inPath);
 
@@ -148,7 +143,6 @@ public class AdminClient {
                     sectionList.add(section);
                 }
                 ret.add(new AirplaneWrapper(modelName, sectionList));
-                added++;
             }
 
         } catch (IOException e) {
@@ -161,7 +155,6 @@ public class AdminClient {
     private static List<FlightWrapper> parseFlights(String inPath) {
         List<FlightWrapper> ret = new ArrayList<>();
         Path path = Paths.get(inPath);
-        int added = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(path.toFile()))) {
             String line;
             br.readLine();
@@ -181,7 +174,6 @@ public class AdminClient {
                 }
                 FlightWrapper flight = new FlightWrapper(modelName, flightCode, destinationCode, tickets);
                 ret.add(flight);
-                added++;
             }
 
         } catch (IOException e) {
