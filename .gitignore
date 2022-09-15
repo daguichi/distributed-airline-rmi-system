@@ -35,3 +35,5 @@ target/
 server/pom.xml
 
 .idea/
+
+*.iml
