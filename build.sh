@@ -8,7 +8,6 @@ chmod u+x ./run-server.sh
 cd ..
 cd tpe1-g9-client-1.0-SNAPSHOT
 chmod u+x ./run-seatAssign.sh
-chmod u+x ./run-client.sh
 chmod u+x ./run-seatMap.sh
 chmod u+x ./run-notifications.sh
 chmod u+x ./run-admin.sh
