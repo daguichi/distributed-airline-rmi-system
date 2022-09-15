@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class SeatAdministrationServiceTest {
@@ -72,7 +71,7 @@ public class SeatAdministrationServiceTest {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.assignSeat(flightCode, passengerName1, 1, 'A');
-        Assertions.assertFalse(servant.getFlights().get(flightCode)
+        Assertions.assertFalse(servant.getAirport().getFlights().get(flightCode)
                 .getAirplane().getSeats().get(1).get(0).isAvailable());
     }
 
@@ -151,11 +150,11 @@ public class SeatAdministrationServiceTest {
 
         servant.changeSeat(flightCode, passengerName1, 2, 'B');
 
-        Assertions.assertTrue(servant.getFlights().get(flightCode)
+        Assertions.assertTrue(servant.getAirport().getFlights().get(flightCode)
                 .getAirplane().getSeats().get(1).get(0).isAvailable());
-        Assertions.assertFalse(servant.getFlights().get(flightCode)
+        Assertions.assertFalse(servant.getAirport().getFlights().get(flightCode)
                 .getAirplane().getSeats().get(2).get(1).isAvailable());
-        Assertions.assertEquals(ticket, servant.getFlights().get(flightCode)
+        Assertions.assertEquals(ticket, servant.getAirport().getFlights().get(flightCode)
                 .getAirplane().getSeats().get(2).get(1).getTicket().get());
     }
 
@@ -171,20 +170,10 @@ public class SeatAdministrationServiceTest {
     public void changeSeatInvalidSeat() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
-
+        servant.assignSeat(flightCode, passengerName1, 1, 'A');
         Assertions.assertThrows(InvalidSeatException.class,
                 () -> servant.changeSeat(planeName, passengerName1, 1, 'Z'),
                 "Should have thrown InvalidSeatException");
-    }
-
-    @Test
-    public void changeSeatNoTicket() throws RemoteException {
-        servant.addPlaneModel(planeName, sectionList);
-        servant.addFlight(planeName, flightCode, destinationCode, tickets);
-
-        Assertions.assertThrows(NoTicketException.class,
-                () -> servant.changeSeat(planeName, "NO-TICKET", 1, 'A'),
-                "Should have thrown NoTicketException");
     }
 
     @Test
@@ -277,8 +266,8 @@ public class SeatAdministrationServiceTest {
         servant.addFlight(planeName, flightCode2, destinationCode, new ArrayList<>());
 
         servant.changeFlight(flightCode, flightCode2, passengerName1);
-        Assertions.assertFalse(servant.getFlights().get(flightCode).getTickets().contains(ticket));
-        Assertions.assertTrue(servant.getFlights().get(flightCode2).getTickets().contains(ticket));
+        Assertions.assertFalse(servant.getAirport().getFlights().get(flightCode).getTickets().contains(ticket));
+        Assertions.assertTrue(servant.getAirport().getFlights().get(flightCode2).getTickets().contains(ticket));
     }
 
     @Test
@@ -303,19 +292,6 @@ public class SeatAdministrationServiceTest {
                 () -> servant.changeFlight(flightCode, flightCode2, passengerName1),
                 "Should have thrown InvalidAlternativeFlightException");
     }
-
-    //TODO CASO BORDE, QUE PASA SI QUIERO CAMBIAR MI TICKET ECONOMY A UN AVION QUE SOLO TIENE BUSINESS
-//    @Test
-//    public void changeFlightNoAvailableSeat() throws RemoteException {
-//        servant.addPlaneModel(planeName, sectionList);
-//        servant.addPlaneModel(planeName2, Collections.singletonList(business));
-//        servant.addFlight(planeName, flightCode, destinationCode, tickets);
-//        servant.addFlight(planeName2, flightCode2, destinationCode, new ArrayList<>());
-//
-//        Assertions.assertThrows(InvalidAlternativeFlightException.class,
-//                () -> servant.changeFlight(flightCode, flightCode2, passengerName2),
-//                "Should have thrown InvalidAlternativeFlightException");
-//    }
 
     @Test
     public void changeFlightsNoTicket() throws RemoteException {

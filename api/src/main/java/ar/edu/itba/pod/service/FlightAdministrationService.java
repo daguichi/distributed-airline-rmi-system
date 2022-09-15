@@ -8,8 +8,8 @@ import java.util.List;
 
 public interface FlightAdministrationService extends Remote {
 
-    AirplaneWrapper addPlaneModel(String name, List<Section> sections) throws RemoteException;
-    FlightWrapper addFlight(String modelName, String flightCode, String destinationCode, List<Ticket> tickets) throws RemoteException;
+    void addPlaneModel(String name, List<Section> sections) throws RemoteException;
+    void addFlight(String modelName, String flightCode, String destinationCode, List<Ticket> tickets) throws RemoteException;
     FlightStatus getFlightStatus(String flightCode) throws RemoteException;
     FlightStatus cancelFlight(String flightCode) throws RemoteException;
     FlightStatus confirmFlight(String flightCode) throws RemoteException;

@@ -34,18 +34,18 @@ public class FlightNotificationServiceTest {
     private final List<Ticket> tickets = Arrays.asList(ticket, ticket2);
 
 
-    @Test //TODO NASO MIRA ESTE TEST A VER SI ESTA BIEN O FALTA ALGO
+    @Test
     public void registerPassenger() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
 
         servant.registerPassenger(flightCode, passengerName1, null);
 
-        Assertions.assertTrue(servant.getSubscribers().containsKey(flightCode));
-        Assertions.assertTrue(servant.getSubscribers().get(flightCode).containsKey(passengerName1));
+        Assertions.assertTrue(servant.getAirport().getSubscribers().containsKey(flightCode));
+        Assertions.assertTrue(servant.getAirport().getSubscribers().get(flightCode).containsKey(passengerName1));
 
-        Assertions.assertFalse(servant.getSubscribers().containsKey(flightCode2));
-        Assertions.assertFalse(servant.getSubscribers().get(flightCode).containsKey(passengerName2));
+        Assertions.assertFalse(servant.getAirport().getSubscribers().containsKey(flightCode2));
+        Assertions.assertFalse(servant.getAirport().getSubscribers().get(flightCode).containsKey(passengerName2));
     }
 
     @Test

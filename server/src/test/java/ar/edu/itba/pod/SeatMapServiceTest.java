@@ -4,6 +4,7 @@ import ar.edu.itba.pod.exceptions.EmptySeatMapException;
 import ar.edu.itba.pod.exceptions.InvalidRowException;
 import ar.edu.itba.pod.exceptions.NoSuchFlightException;
 import ar.edu.itba.pod.model.*;
+import ar.edu.itba.pod.server.Airport;
 import ar.edu.itba.pod.server.Servant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import java.util.List;
 public class SeatMapServiceTest {
 
     Servant servant = new Servant();
-
     private final String planeName = "TEST";
     private final String flightCode = "TEST";
     private final String flightCode2 = "TEST-2";
@@ -37,7 +37,6 @@ public class SeatMapServiceTest {
             2,Category.ECONOMY);
     private final List<Row> rows = Arrays.asList(row1, row2, row3);
 
-    //TODO NO ANDAN LOS TESTS
     @Test
     public void getFlightMap() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
