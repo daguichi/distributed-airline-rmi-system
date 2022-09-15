@@ -48,7 +48,7 @@ Luego encender el server mediante con el script run-server.sh. El puerto por def
 ./run-server.sh [PORT]
 ```
 
-Luego puede ejecutar los clientes de las siguientes formas:
+Luego en la carpeta tpe1-g9-client-1.0-SNAPSHOT puede ejecutar los clientes de las siguientes formas:
 
 ## run-admin
 ```bash

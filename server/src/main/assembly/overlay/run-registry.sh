@@ -1,5 +1,4 @@
-#!/bin/bash
-#sets the classpath and starts the registry on port 1099
+#!bin/bash
 
 CLASSPATH="."
 for dep in `ls lib/jars/*.jar`
@@ -9,4 +8,4 @@ done
 
 export CLASSPATH
 
-rmiregistry -J-Djava.rmi.server.logCalls=true  $*
+rmiregistry -J-Djava.rmi.server.logCalls=true $*
