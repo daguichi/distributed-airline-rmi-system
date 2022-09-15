@@ -56,9 +56,6 @@ public class NotificationEventCallbackImpl implements NotificationEventCallback 
 
     @Override
     public void unsubscribe() throws RemoteException {
-        Thread exitThread = new Thread(() -> {
             System.exit(0);
-        });
-        exitThread.start();
     }
 }
