@@ -22,14 +22,8 @@ public class Airport {
     private final ReentrantReadWriteLock flightsLock = new ReentrantReadWriteLock(true);
     private final ReentrantReadWriteLock subscribersLock = new ReentrantReadWriteLock(true);
 
-    private Airport() {
+    public Airport() {
         subscribers = new HashMap<>();
-    }
-
-    public static Airport getInstance() {
-        if(instance == null)
-            instance = new Airport();
-        return instance;
     }
 
     public Airplane getAirplane(String name) {

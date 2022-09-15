@@ -37,7 +37,6 @@ public class SeatMapServiceTest {
             2,Category.ECONOMY);
     private final List<Row> rows = Arrays.asList(row1, row2, row3);
 
-    //TODO NO ANDAN LOS TESTS
     @Test
     public void getFlightMap() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);

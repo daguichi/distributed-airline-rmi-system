@@ -5,7 +5,6 @@ import ar.edu.itba.pod.exceptions.NoSuchFlightException;
 import ar.edu.itba.pod.model.Category;
 import ar.edu.itba.pod.model.Section;
 import ar.edu.itba.pod.model.Ticket;
-import ar.edu.itba.pod.server.Airport;
 import ar.edu.itba.pod.server.Servant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ import java.util.List;
 public class FlightNotificationServiceTest {
 
     Servant servant = new Servant();
-    Airport airport = Airport.getInstance();
+
     private final String planeName = "TEST";
     private final String flightCode = "TEST";
     private final String flightCode2 = "TEST-2";
@@ -42,11 +41,11 @@ public class FlightNotificationServiceTest {
 
         servant.registerPassenger(flightCode, passengerName1, null);
 
-        Assertions.assertTrue(airport.getSubscribers().containsKey(flightCode));
-        Assertions.assertTrue(airport.getSubscribers().get(flightCode).containsKey(passengerName1));
+        Assertions.assertTrue(servant.getAirport().getSubscribers().containsKey(flightCode));
+        Assertions.assertTrue(servant.getAirport().getSubscribers().get(flightCode).containsKey(passengerName1));
 
-        Assertions.assertFalse(airport.getSubscribers().containsKey(flightCode2));
-        Assertions.assertFalse(airport.getSubscribers().get(flightCode).containsKey(passengerName2));
+        Assertions.assertFalse(servant.getAirport().getSubscribers().containsKey(flightCode2));
+        Assertions.assertFalse(servant.getAirport().getSubscribers().get(flightCode).containsKey(passengerName2));
     }
 
     @Test

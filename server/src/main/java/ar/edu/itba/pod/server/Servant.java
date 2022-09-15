@@ -19,7 +19,7 @@ public class Servant implements FlightAdministrationService,
         FlightNotificationService, SeatAdministrationService, SeatMapService {
 
     private final static Logger logger = LoggerFactory.getLogger(Servant.class);
-    private final Airport airport = Airport.getInstance();
+    private final Airport airport = new Airport();
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     @Override
@@ -178,12 +178,13 @@ public class Servant implements FlightAdministrationService,
 
         flight.getLock().writeLock().lock();
         try {
+            newSeat = getSeat(flight, row, column);
+
             oldSeat = getPassengerSeat(flight,passengerName);
             if(!oldSeat.isPresent())
                 throw new PassengerNotInFlightException(passengerName, flightCode);
 
-            newSeat = getSeat(flight, row, column);
-            Ticket ticket = getTicket(flight, passengerName);;
+            Ticket ticket = getTicket(flight, passengerName);
             oldCategory = oldSeat.get().getCategory();
             checkSeat(flight, newSeat, ticket);
             oldSeat.get().setTicket(null);
@@ -525,5 +526,10 @@ public class Servant implements FlightAdministrationService,
                 logger.error(e.getMessage());
             }
         }));
+    }
+
+    //Testing
+    public Airport getAirport() {
+        return airport;
     }
 }
