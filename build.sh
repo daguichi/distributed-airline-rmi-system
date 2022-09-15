@@ -1,3 +1,4 @@
+#!/bin/bash
 mvn clean install
 tar -xzvf server/target/tpe1-g9-server-1.0-SNAPSHOT-bin.tar.gz
 tar -xzvf client/target/tpe1-g9-client-1.0-SNAPSHOT-bin.tar.gz
@@ -11,3 +12,4 @@ chmod u+x ./run-client.sh
 chmod u+x ./run-seatMap.sh
 chmod u+x ./run-notifications.sh
 chmod u+x ./run-admin.sh
+
