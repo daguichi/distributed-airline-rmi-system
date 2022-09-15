@@ -31,3 +31,7 @@ target/
 
 
 *.csv
+
+server/pom.xml
+
+.idea/

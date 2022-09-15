@@ -62,7 +62,6 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
         notifyFlightConfirmed(flightCode);
         executor.awaitTermination(1, TimeUnit.SECONDS);
 
-//        TODO: Ver donde ponemos este remove, deberia estar despues del submit del executor subscribers.remove(flightCode);
         return FlightStatus.CONFIRMED;
     }
 

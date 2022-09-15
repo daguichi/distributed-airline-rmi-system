@@ -14,10 +14,9 @@ mvn clean install
 
 Luego, en los directorios server/target y client/target se encuentran archvos .tar.gz que deben ser descomprimidos. Las carpetas obtenidas contienen los scripts para ejecutar las distintas partes del proyecto.
 
-TODO: REVISAR 
 ```bash
-tar -xzvf server/target/tpe1-pod-bin.tar.gz
-tar -xzvf client/target/tpe1-pod-bin.tar.gz
+tar -xzvf server/target/tpe1-g9-server-1.0-SNAPSHOT-bin.tar.gz
+tar -xzvf client/target/tpe1-g9-client-1.0-SNAPSHOT-bin.tar.gz
 ```
 
 
@@ -26,10 +25,9 @@ tar -xzvf client/target/tpe1-pod-bin.tar.gz
 Otorgar permisos a los scripts obtenidos al descomprimir el .tar.gz en el server, realizado en el paso anterior.
 
 ```bash
-TODO: REVISAR 
-cd tpe1-pod/server/main/assembly/overlay
-chmod 777 ./run-registry.sh
-chmod 777 ./run-server.sh
+cd tpe1-g9-server-1.0-SNAPSHOT
+chmod u+x ./run-registry.sh
+chmod u+x ./run-server.sh
 ```
 
 Luego encender el Rmi Registry ejecutando el script run-registry.sh. El puerto por default es 1099.
@@ -46,13 +44,12 @@ Luego, encender el server, mediante el otro script de esta misma carpeta carpeta
 Para ejecutar los clientes debemos acceder al directorio generado al descomprimir su archivo al inicio y asignar los permisos pertinentes.
 
 ```bash
-TODO: REVISAR 
-cd client/target/tpe1-pod
-chmod 777 run-admin.sh
-chmod 777 run-client.sh
-chmod 777 run-notification.sh
-chmod 777 run-seatAssign.sh
-chmod 777 run-seatMap.sh
+cd ../tpe1-g9-client-1.0-SNAPSHOT
+chmod u+x run-admin.sh
+chmod u+x run-client.sh
+chmod u+x run-notification.sh
+chmod u+x run-seatAssign.sh
+chmod u+x run-seatMap.sh
 ```
 Luego los clientes disponibles junto a su modo de uso son los siguientes:
 
@@ -95,10 +92,10 @@ donde:
         - La categoría de los asientos asignables
     - changeTicket: Cambia el ticket del pasajero name de un vuelo de código originFlightCode a otro vuelo alternativo de código flightCode
   
-##run-notifcations
+##run-notifications
 ```bash
 
- ./run-notifcations -DserverAddress=xx.xx.xx.xx:yyyy -Dflight=flightCode -Dpassenger=name
+ ./run-notifications -DserverAddress=xx.xx.xx.xx:yyyy -Dflight=flightCode -Dpassenger=name
 
 ```
 donde:

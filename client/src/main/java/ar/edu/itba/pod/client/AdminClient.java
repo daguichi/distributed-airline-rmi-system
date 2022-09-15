@@ -55,7 +55,7 @@ public class AdminClient {
         }
     }
 
-    private static void execAction(String[] args, String action, FlightAdministrationService service) throws RemoteException {
+    private static void execAction(String[] args, String action, FlightAdministrationService service) throws RemoteException, InterruptedException {
         if ("models".equals(action) || "flights".equals(action)) {
             String inPath = parseParameter(args, "-DinPath");
             switch (action) {
