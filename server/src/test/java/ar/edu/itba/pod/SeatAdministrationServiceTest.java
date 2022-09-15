@@ -16,7 +16,6 @@ public class SeatAdministrationServiceTest {
     Servant servant = new Servant();
 
     private final String planeName = "TEST";
-    private final String planeName2 = "TEST-2";
     private final String flightCode = "TEST";
     private final String flightCode2 = "TEST-2";
     private final String flightCode3 = "TEST-3";
@@ -59,7 +58,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void isAvailableInvalidFlight() throws RemoteException {
+    public void isAvailableInvalidFlight() {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
                 () -> servant.isAvailable(flightCode, 1, 'A'),
                 "Should have thrown NoSuchFlightException");
@@ -96,7 +95,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void assignSeatInvalidFlight() throws RemoteException {
+    public void assignSeatInvalidFlight() {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
                 () -> servant.assignSeat(flightCode, passengerName1, 1, 'A'),
                 "Should have thrown NoSuchFlightException");
@@ -133,7 +132,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void assignSeatNotPendingFlight() throws RemoteException, InterruptedException {
+    public void assignSeatNotPendingFlight() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.confirmFlight(flightCode);
@@ -159,7 +158,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void changeSeatInvalidFlight() throws RemoteException {
+    public void changeSeatInvalidFlight() {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
                 () -> servant.changeSeat(flightCode, passengerName1, 1, 'A'),
                 "Should have thrown NoSuchFlightException");
@@ -208,7 +207,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void changeSeatNotPendingFlight() throws RemoteException, InterruptedException {
+    public void changeSeatNotPendingFlight() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.assignSeat(flightCode, passengerName1, 1, 'A');
@@ -249,7 +248,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void getAlternativeFlightsInvalidFlight() throws RemoteException {
+    public void getAlternativeFlightsInvalidFlight() {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
                 () -> servant.getAlternativeFlights(flightCode, passengerName1),
                 "Should have thrown NoSuchFlightException");
@@ -257,7 +256,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void changeFlight() throws RemoteException, InterruptedException {
+    public void changeFlight() throws RemoteException {
         List<Ticket> ticketsList = new ArrayList<>();
         ticketsList.add(ticket);
         ticketsList.add(ticket2);
@@ -304,7 +303,7 @@ public class SeatAdministrationServiceTest {
     }
 
     @Test
-    public void changeInvalidOldFlight() throws RemoteException {
+    public void changeInvalidOldFlight() {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
                 () -> servant.changeFlight(flightCode, flightCode2, passengerName1),
                 "Should have thrown NoSuchFlightException");

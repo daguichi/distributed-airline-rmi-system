@@ -4,7 +4,6 @@ import ar.edu.itba.pod.exceptions.EmptySeatMapException;
 import ar.edu.itba.pod.exceptions.InvalidRowException;
 import ar.edu.itba.pod.exceptions.NoSuchFlightException;
 import ar.edu.itba.pod.model.*;
-import ar.edu.itba.pod.server.Airport;
 import ar.edu.itba.pod.server.Servant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -19,9 +18,6 @@ public class SeatMapServiceTest {
     Servant servant = new Servant();
     private final String planeName = "TEST";
     private final String flightCode = "TEST";
-    private final String flightCode2 = "TEST-2";
-    private final String passengerName1 = "A";
-    private final String passengerName2 = "Z";
     private final String destinationCode = "TEST";
     private final int row = 1;
 
@@ -45,7 +41,7 @@ public class SeatMapServiceTest {
     }
 
     @Test
-    public void getFlightMapInvalidFlight() throws RemoteException {
+    public void getFlightMapInvalidFlight() {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
                 () -> servant.getFlightMap(flightCode),
                 "Should have thrown NoSuchFlightException");
@@ -60,7 +56,7 @@ public class SeatMapServiceTest {
     }
 
     @Test
-    public void getFlightMapByCategoryInvalidFlight() throws RemoteException {
+    public void getFlightMapByCategoryInvalidFlight() {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
                 () -> servant.getFlightMapByCategory(flightCode, Category.ECONOMY),
                 "Should have thrown NoSuchFlightException");
@@ -93,7 +89,7 @@ public class SeatMapServiceTest {
     }
 
     @Test
-    public void getFlightMapByRowInvalidFlight() throws RemoteException {
+    public void getFlightMapByRowInvalidFlight() {
         NoSuchFlightException exception = Assertions.assertThrows(NoSuchFlightException.class,
                 () -> servant.getFlightMapByRow(flightCode, row),
                 "Should have thrown NoSuchFlightException");

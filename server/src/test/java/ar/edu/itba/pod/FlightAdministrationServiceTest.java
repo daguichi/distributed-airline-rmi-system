@@ -30,7 +30,6 @@ public class FlightAdministrationServiceTest {
     private final Section smallBusiness = new Section(Category.BUSINESS, 1, 1);
     private final Section invalidSection = new Section(Category.ECONOMY, -1, 10);
     private final List<Section> sectionList = Arrays.asList(business, economy);
-    private final List<Section> sectionListNoBusiness = Collections.singletonList(economy);
 
     private final Ticket ticket = new Ticket(passengerName1, Category.BUSINESS);
     private final Ticket ticket2 = new Ticket(passengerName2, Category.ECONOMY);
