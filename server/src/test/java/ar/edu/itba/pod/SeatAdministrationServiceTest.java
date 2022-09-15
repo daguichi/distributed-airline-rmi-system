@@ -2,6 +2,7 @@ package ar.edu.itba.pod;
 
 import ar.edu.itba.pod.exceptions.*;
 import ar.edu.itba.pod.model.*;
+import ar.edu.itba.pod.server.Airport;
 import ar.edu.itba.pod.server.Servant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ import java.util.List;
 public class SeatAdministrationServiceTest {
 
     Servant servant = new Servant();
-
+    Airport airport = Airport.getInstance();
     private final String planeName = "TEST";
     private final String planeName2 = "TEST-2";
     private final String flightCode = "TEST";
@@ -72,7 +73,7 @@ public class SeatAdministrationServiceTest {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.assignSeat(flightCode, passengerName1, 1, 'A');
-        Assertions.assertFalse(servant.getFlights().get(flightCode)
+        Assertions.assertFalse(airport.getFlights().get(flightCode)
                 .getAirplane().getSeats().get(1).get(0).isAvailable());
     }
 
@@ -151,11 +152,11 @@ public class SeatAdministrationServiceTest {
 
         servant.changeSeat(flightCode, passengerName1, 2, 'B');
 
-        Assertions.assertTrue(servant.getFlights().get(flightCode)
+        Assertions.assertTrue(airport.getFlights().get(flightCode)
                 .getAirplane().getSeats().get(1).get(0).isAvailable());
-        Assertions.assertFalse(servant.getFlights().get(flightCode)
+        Assertions.assertFalse(airport.getFlights().get(flightCode)
                 .getAirplane().getSeats().get(2).get(1).isAvailable());
-        Assertions.assertEquals(ticket, servant.getFlights().get(flightCode)
+        Assertions.assertEquals(ticket, airport.getFlights().get(flightCode)
                 .getAirplane().getSeats().get(2).get(1).getTicket().get());
     }
 
@@ -277,8 +278,8 @@ public class SeatAdministrationServiceTest {
         servant.addFlight(planeName, flightCode2, destinationCode, new ArrayList<>());
 
         servant.changeFlight(flightCode, flightCode2, passengerName1);
-        Assertions.assertFalse(servant.getFlights().get(flightCode).getTickets().contains(ticket));
-        Assertions.assertTrue(servant.getFlights().get(flightCode2).getTickets().contains(ticket));
+        Assertions.assertFalse(airport.getFlights().get(flightCode).getTickets().contains(ticket));
+        Assertions.assertTrue(airport.getFlights().get(flightCode2).getTickets().contains(ticket));
     }
 
     @Test

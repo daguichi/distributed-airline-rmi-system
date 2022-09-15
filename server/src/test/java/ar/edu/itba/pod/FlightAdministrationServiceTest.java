@@ -3,6 +3,7 @@ package ar.edu.itba.pod;
 import ar.edu.itba.pod.exceptions.NoSuchFlightException;
 import ar.edu.itba.pod.exceptions.NotPendingFlightException;
 import ar.edu.itba.pod.model.*;
+import ar.edu.itba.pod.server.Airport;
 import ar.edu.itba.pod.server.Servant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import java.util.List;
 public class FlightAdministrationServiceTest {
 
     Servant servant = new Servant();
+    Airport airport = Airport.getInstance();
 
     private final String planeName = "TEST";
     private final String planeName2 = "TEST-2";
@@ -41,35 +43,35 @@ public class FlightAdministrationServiceTest {
     @Test
     public void addValidAirplane() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
-        Assertions.assertTrue(servant.getAirplanes().containsKey(planeName));
+        Assertions.assertTrue(airport.getAirplanes().containsKey(planeName));
     }
 
     @Test
     public void addRepeatedAirplane() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addPlaneModel(planeName, sectionListNoBusiness);
-        Assertions.assertTrue(servant.getAirplanes().containsKey(planeName));
-        Assertions.assertEquals(Category.BUSINESS ,servant.getAirplanes().get(planeName)
+        Assertions.assertTrue(airport.getAirplanes().containsKey(planeName));
+        Assertions.assertEquals(Category.BUSINESS ,airport.getAirplanes().get(planeName)
                 .getSeats().get(0).get(0).getCategory());
     }
 
     @Test
     public void addInvalidSectionAirplane() throws RemoteException {
         servant.addPlaneModel(planeName, Collections.singletonList(invalidSection));
-        Assertions.assertFalse(servant.getAirplanes().containsKey(planeName));
+        Assertions.assertFalse(airport.getAirplanes().containsKey(planeName));
     }
 
     @Test
     public void addValidFlight() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
-        Assertions.assertTrue(servant.getFlights().containsKey(flightCode));
+        Assertions.assertTrue(airport.getFlights().containsKey(flightCode));
     }
 
     @Test
     public void addInvalidAirplaneFlight() throws RemoteException {
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
-        Assertions.assertFalse(servant.getFlights().containsKey(flightCode));
+        Assertions.assertFalse(airport.getFlights().containsKey(flightCode));
     }
 
     @Test
@@ -77,15 +79,15 @@ public class FlightAdministrationServiceTest {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.addFlight(planeName, flightCode2, destinationCode, tickets);
-        Assertions.assertTrue(servant.getFlights().containsKey(flightCode));
-        Assertions.assertNotEquals(flightCode2, servant.getFlights().get(flightCode).getFlightCode());
+        Assertions.assertTrue(airport.getFlights().containsKey(flightCode));
+        Assertions.assertNotEquals(flightCode2, airport.getFlights().get(flightCode).getFlightCode());
     }
 
     @Test
     public void getFlightStatus() throws RemoteException {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
-        Assertions.assertEquals(FlightStatus.PENDING, servant.getFlights().get(flightCode).getStatus());
+        Assertions.assertEquals(FlightStatus.PENDING, airport.getFlights().get(flightCode).getStatus());
     }
 
     @Test
@@ -101,7 +103,7 @@ public class FlightAdministrationServiceTest {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.cancelFlight(flightCode);
-        Assertions.assertEquals(FlightStatus.CANCELLED, servant.getFlights().get(flightCode).getStatus());
+        Assertions.assertEquals(FlightStatus.CANCELLED, airport.getFlights().get(flightCode).getStatus());
     }
 
     @Test
@@ -121,7 +123,7 @@ public class FlightAdministrationServiceTest {
         servant.addPlaneModel(planeName, sectionList);
         servant.addFlight(planeName, flightCode, destinationCode, tickets);
         servant.confirmFlight(flightCode);
-        Assertions.assertEquals(FlightStatus.CONFIRMED, servant.getFlights().get(flightCode).getStatus());
+        Assertions.assertEquals(FlightStatus.CONFIRMED, airport.getFlights().get(flightCode).getStatus());
     }
 
     @Test
@@ -147,9 +149,9 @@ public class FlightAdministrationServiceTest {
         servant.cancelFlight(flightCode);
         servant.reprogramFlightsTickets();
         for(Ticket t : ticketsList) {
-            Assertions.assertFalse(servant.getFlights()
+            Assertions.assertFalse(airport.getFlights()
                     .get(flightCode).getTickets().contains(t));
-            Assertions.assertTrue(servant.getFlights()
+            Assertions.assertTrue(airport.getFlights()
                     .get(flightCode2).getTickets().contains(t));
         }
     }
@@ -171,11 +173,11 @@ public class FlightAdministrationServiceTest {
         servant.reprogramFlightsTickets();
 
         for(Ticket t : ticketsList) {
-            Assertions.assertTrue(servant.getFlights()
+            Assertions.assertTrue(airport.getFlights()
                     .get(flightCode3).getTickets().contains(t));
         }
         for(Ticket t : ticketsList2) {
-            Assertions.assertTrue(servant.getFlights()
+            Assertions.assertTrue(airport.getFlights()
                     .get(flightCode3).getTickets().contains(t));
         }
     }
@@ -196,14 +198,14 @@ public class FlightAdministrationServiceTest {
         servant.cancelFlight(flightCode);
         servant.reprogramFlightsTickets();
 
-        Assertions.assertFalse(servant.getFlights()
+        Assertions.assertFalse(airport.getFlights()
                 .get(flightCode).getTickets().contains(ticket));
-        Assertions.assertTrue(servant.getFlights()
+        Assertions.assertTrue(airport.getFlights()
                 .get(flightCode).getTickets().contains(ticket2));
 
-        Assertions.assertTrue(servant.getFlights()
+        Assertions.assertTrue(airport.getFlights()
                 .get(flightCode2).getTickets().contains(ticket));
-        Assertions.assertFalse(servant.getFlights()
+        Assertions.assertFalse(airport.getFlights()
                 .get(flightCode2).getTickets().contains(ticket2));
 
     }

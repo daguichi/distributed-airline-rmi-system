@@ -168,4 +168,19 @@ public class Airport {
         return alternativeFlights;
     }
 
+
+
+
+    // Just for testing
+    public Map<String, Airplane> getAirplanes() {
+        return airplanes;
+    }
+
+    public Map<String, Flight> getFlights() {
+        return flights;
+    }
+
+    public Map<String, Map<String, List<NotificationEventCallback>>> getSubscribers() {
+        return subscribers;
+    }
 }

@@ -6,7 +6,6 @@ import java.util.List;
 public class AirplaneWrapper implements Serializable {
     private String modelName;
     private List<Section> sections;
-    private boolean valid;
 
     public String getModelName() {
         return modelName;
@@ -16,13 +15,9 @@ public class AirplaneWrapper implements Serializable {
         return sections;
     }
 
-    public AirplaneWrapper(String modelName, List<Section> sections, boolean valid) {
+    public AirplaneWrapper(String modelName, List<Section> sections) {
         this.modelName = modelName;
         this.sections = sections;
-        this.valid = valid;
     }
 
-    public boolean isValid() {
-        return valid;
-    }
 }

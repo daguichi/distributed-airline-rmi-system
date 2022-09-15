@@ -9,14 +9,11 @@ import ar.edu.itba.pod.service.SeatAdministrationService;
 import ar.edu.itba.pod.service.SeatMapService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
+
 
 public class Servant implements FlightAdministrationService,
         FlightNotificationService, SeatAdministrationService, SeatMapService {
@@ -26,30 +23,26 @@ public class Servant implements FlightAdministrationService,
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     @Override
-    public AirplaneWrapper addPlaneModel(String name, List<Section> sections) throws RemoteException {
-        boolean valid = true;
+    public void addPlaneModel(String name, List<Section> sections) throws RemoteException {
         for(Section s : sections) {
             if (s.getColumnCount() <= 0 || s.getRowCount() <= 0) {
-                return new AirplaneWrapper(name, sections, false);
+                throw new InvalidSectionException(name);
             }
         }
         Airplane airplane = new Airplane(name, sections);
 
         airport.addAirplane(airplane);
-        return new AirplaneWrapper(name, sections, valid);
     }
 
     @Override
-    public FlightWrapper addFlight(String modelName, String flightCode,
+    public void addFlight(String modelName, String flightCode,
                                    String destinationCode, List<Ticket> tickets) throws RemoteException {
         Airplane airplane = airport.getAirplane(modelName);
         if(airplane == null)
-            return new FlightWrapper(modelName, flightCode, destinationCode, tickets, false);
-        boolean valid = true;
+            throw new NoSuchAirplaneException(modelName,flightCode);
         Flight flight = new Flight(airplane, flightCode, destinationCode, tickets, FlightStatus.PENDING);
 
         airport.addFlight(flight);
-        return new FlightWrapper(modelName, flightCode, destinationCode, tickets, valid);
     }
 
     @Override

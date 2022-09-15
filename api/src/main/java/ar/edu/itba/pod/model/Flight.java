@@ -11,7 +11,7 @@ public class Flight  implements Serializable {
     private final String destinationCode;
     private final List<Ticket> tickets;
     private FlightStatus status;
-    private ReentrantReadWriteLock lock;
+    private final ReentrantReadWriteLock lock;
 
     public Flight(Airplane airplane, String flightCode, String destinationCode, List<Ticket> tickets, FlightStatus status) {
         this.airplane = airplane;
