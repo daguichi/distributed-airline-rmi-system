@@ -21,7 +21,7 @@ public class Servant implements FlightAdministrationService, FlightNotificationS
     public void addPlaneModel(String name, List<Section> sections) throws RemoteException {
         for(Section s : sections) {
             if (s.getColumnCount() <= 0 || s.getRowCount() <= 0) {
-                throw new InvalidSectionException(name);
+                throw new InvalidSectionException();
             }
         }
         Airplane airplane = new Airplane(name, sections);

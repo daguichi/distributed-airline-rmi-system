@@ -9,7 +9,7 @@ import java.util.*;
 public class Airplane implements Serializable {
 
     private final String name;
-    private Map<Integer, Map<Integer, Seat>> seats;
+    private final Map<Integer, Map<Integer, Seat>> seats;
 
     public Airplane(String name, List<Section> sections) {
         this.name = name;

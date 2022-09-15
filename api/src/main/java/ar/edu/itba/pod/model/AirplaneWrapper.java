@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.List;
 
 public class AirplaneWrapper implements Serializable {
-    private String modelName;
-    private List<Section> sections;
+    private final String modelName;
+    private final List<Section> sections;
 
     public String getModelName() {
         return modelName;

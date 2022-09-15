@@ -1,14 +1,12 @@
 package ar.edu.itba.pod.model;
 
 import java.io.Serializable;
-import java.util.Map;
 
 public class Section implements Comparable<Section>, Serializable {
 
     private Category category;
-    private int rowCount;
-    private int columnCount;
-    private Map<Integer, Map<Integer, Ticket>> seatMap;
+    private final int rowCount;
+    private final int columnCount;
 
     public Section(Category category,  int rowCount, int columnCount) {
         this.category = category;
@@ -33,23 +31,8 @@ public class Section implements Comparable<Section>, Serializable {
         return rowCount;
     }
 
-    public void setRowCount(int rowCount) {
-        this.rowCount = rowCount;
-    }
-
     public int getColumnCount() {
         return columnCount;
     }
 
-    public void setColumnCount(int columnCount) {
-        this.columnCount = columnCount;
-    }
-
-    public int getTotalSeats() {
-        return rowCount * columnCount;
-    }
-
-    public Map<Integer, Map<Integer, Ticket>> getSeatMap() {
-        return seatMap;
-    }
 }

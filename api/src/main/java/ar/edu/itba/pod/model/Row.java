@@ -6,9 +6,9 @@ import java.util.Objects;
 
 public class Row implements Serializable {
 
-    private List<Seat> seatList;
-    private int row;
-    private Category category;
+    private final List<Seat> seatList;
+    private final int row;
+    private final Category category;
 
     public Row(List<Seat> seatList, int row, Category category) {
         this.seatList = seatList;

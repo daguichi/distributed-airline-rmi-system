@@ -1,7 +1,5 @@
 package ar.edu.itba.pod.model;
 
-import ar.edu.itba.pod.model.Ticket;
-
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
@@ -9,9 +7,9 @@ import java.util.Optional;
 public class Seat implements Serializable {
 
     private Ticket ticket;
-    private Category category;
-    private int row;
-    private char column;
+    private final Category category;
+    private final int row;
+    private final char column;
 
     public Seat(Category category, int row, char column) {
         this.row = row;

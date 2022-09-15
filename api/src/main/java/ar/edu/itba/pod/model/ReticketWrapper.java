@@ -7,20 +7,11 @@ import java.util.List;
 
 public class ReticketWrapper implements Serializable {
     private int ticketsChanged = 0;
-    private List<ReticketWrapper.TicketInfo> noAlternativeTickets;
+    private final List<ReticketWrapper.TicketInfo> noAlternativeTickets;
 
 
     public ReticketWrapper() {
         noAlternativeTickets = new ArrayList<>();
-    }
-
-    public int getTicketsChanged() {
-        return ticketsChanged;
-    }
-    
-
-    public List<ReticketWrapper.TicketInfo> getNoAlternativeTickets() {
-        return noAlternativeTickets;
     }
 
     public void incrementTickets() {
@@ -32,8 +23,8 @@ public class ReticketWrapper implements Serializable {
     }
 
     public static class TicketInfo implements Serializable {
-        private String flightCode;
-        private String passengerName;
+        private final String flightCode;
+        private final String passengerName;
 
         public TicketInfo(String flightCode, String passengerName) {
             this.flightCode = flightCode;

@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class Ticket implements Serializable {
-    private String passengerName;
-    private Category category;
+    private final String passengerName;
+    private final Category category;
 
     public Ticket(String passengerName, Category category) {
         this.passengerName = passengerName;
