@@ -1,9 +1,7 @@
 package ar.edu.itba.pod.model;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class Section implements Comparable<Section>, Serializable {
 
